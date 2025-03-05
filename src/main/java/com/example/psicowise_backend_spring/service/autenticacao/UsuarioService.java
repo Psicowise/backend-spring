@@ -34,8 +34,6 @@ public class UsuarioService {
             usuario.setNome(usuarioDto.nome());
             usuario.setSobrenome(usuarioDto.sobrenome());
 
-            // Validar email se o email já está cadastrado
-
             // Validar email se o email já está cadastrado
             if (usuarioRepository.findByEmail(usuarioDto.email()).isPresent()) {
                 throw new EmailJaCadastradoException();
