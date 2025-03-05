@@ -1,54 +1,56 @@
-package com.example.psicowise_backend_spring.entity.autenticacao;
+package com.example.psicowise_backend_spring.entity.consulta;
 
+import com.example.psicowise_backend_spring.enums.consulta.StatusConsulta;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "TB_USUARIOS")
-@EntityListeners(AuditingEntityListener.class)
-@Inheritance(strategy = InheritanceType.JOINED)
-@DiscriminatorColumn(name = "tipo_usuario")
-public class Usuario {
+@Table(name = "TB_CONSULTAS")
+public class Consulta {
 
     @Id
-    @Getter
-    @Setter
-    @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
     @Getter
     @Setter
-    @Column(name = "nome")
-    private String nome;
-
-    @Getter
-    @Setter
-    @Column(name = "sobrenome")
-    private String sobrenome;
-
-    @Getter
-    @Setter
-    @Column(name = "email", unique = true)
-    private String email;
-
-    @Getter
-    @Setter
-    @Column(name = "senha")
-    private String senha;
+    @ManyToOne
+    @JoinColumn(name = "paciente_id")
+    private Paciente paciente;
 
     @Getter
     @Setter
     @ManyToOne
-    @JoinColumn(name = "role_id")
-    private Role role;
+    @JoinColumn(name = "psicologo_id")
+    private Psicologo psicologo;
+
+    @Getter
+    @Setter
+    @Column(name = "data_hora")
+    private LocalDateTime dataHora;
+
+    @Getter
+    @Setter
+    @Column(name = "duracao_minutos")
+    private Integer duracaoMinutos;
+
+    @Getter
+    @Setter
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    private StatusConsulta status;
+
+    @Getter
+    @Setter
+    @OneToMany(mappedBy = "consulta", cascade = CascadeType.ALL)
+    private List<Faturamento> faturamentos;
 
     @Getter
     @Setter

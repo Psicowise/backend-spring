@@ -1,54 +1,56 @@
-package com.example.psicowise_backend_spring.entity.autenticacao;
+package com.example.psicowise_backend_spring.entity.consulta;
 
+import com.example.psicowise_backend_spring.enums.consulta.TipoPagamento;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "TB_USUARIOS")
-@EntityListeners(AuditingEntityListener.class)
-@Inheritance(strategy = InheritanceType.JOINED)
-@DiscriminatorColumn(name = "tipo_usuario")
-public class Usuario {
+@Table(name = "TB_FATURAMENTOS")
+public class Faturamento {
 
     @Id
-    @Getter
-    @Setter
-    @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Getter
     private UUID id;
 
     @Getter
     @Setter
-    @Column(name = "nome")
-    private String nome;
-
-    @Getter
-    @Setter
-    @Column(name = "sobrenome")
-    private String sobrenome;
-
-    @Getter
-    @Setter
-    @Column(name = "email", unique = true)
-    private String email;
-
-    @Getter
-    @Setter
-    @Column(name = "senha")
-    private String senha;
-
-    @Getter
-    @Setter
     @ManyToOne
-    @JoinColumn(name = "role_id")
-    private Role role;
+    @JoinColumn(name = "consulta_id")
+    private Consulta consulta;
+
+    @Getter
+    @Setter
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo_pagamento")
+    private TipoPagamento tipoPagamento;
+
+    @Getter
+    @Setter
+    @Column(name = "valor")
+    private BigDecimal valor;
+
+    @Getter
+    @Setter
+    @Column(name = "pago")
+    private boolean pago;
+
+    @Getter
+    @Setter
+    @Column(name = "data_pagamento")
+    private LocalDateTime dataPagamento;
+
+    @Getter
+    @Setter
+    @Column(name = "observacoes")
+    private String observacoes;
 
     @Getter
     @Setter
