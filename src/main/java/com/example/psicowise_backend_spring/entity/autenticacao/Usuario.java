@@ -1,6 +1,7 @@
 package com.example.psicowise_backend_spring.entity.autenticacao;
 
 import jakarta.persistence.*;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
@@ -12,53 +13,38 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "TB_USUARIOS")
+@Data
 @EntityListeners(AuditingEntityListener.class)
 @Inheritance(strategy = InheritanceType.JOINED)
 @DiscriminatorColumn(name = "tipo_usuario")
 public class Usuario {
 
     @Id
-    @Getter
-    @Setter
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
-    @Getter
-    @Setter
     @Column(name = "nome")
     private String nome;
 
-    @Getter
-    @Setter
     @Column(name = "sobrenome")
     private String sobrenome;
 
-    @Getter
-    @Setter
     @Column(name = "email", unique = true)
     private String email;
 
-    @Getter
-    @Setter
     @Column(name = "senha")
     private String senha;
 
-    @Getter
-    @Setter
     @ManyToOne
     @JoinColumn(name = "role_id")
     private Role role;
 
-    @Getter
-    @Setter
     @CreatedDate
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @Getter
-    @Setter
     @LastModifiedDate
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_at")
