@@ -14,8 +14,11 @@ import java.util.UUID;
 @Service
 public class RoleService {
 
-    @Autowired
     private RoleRepository roleRepository;
+
+    public RoleService(RoleRepository roleRepository) {
+        this.roleRepository = roleRepository;
+    }
 
     public ResponseEntity<Role> BuscarRolePorId(UUID id) {
         try {

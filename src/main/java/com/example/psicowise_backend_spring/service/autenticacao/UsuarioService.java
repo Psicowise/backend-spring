@@ -18,14 +18,16 @@ import java.util.UUID;
 @Service
 public class UsuarioService {
 
-    @Autowired
     private UsuarioRepository usuarioRepository;
-
-    @Autowired
     private RoleRepository roleRepository;
-
-    @Autowired
     private HashUtil hashUtil;
+
+    public UsuarioService(UsuarioRepository usuarioRepository, RoleRepository roleRepository, HashUtil hashUtil) {
+        this.usuarioRepository = usuarioRepository;
+        this.roleRepository = roleRepository;
+        this.hashUtil = hashUtil;
+    }
+
 
     public ResponseEntity<Usuario> CriarUsuario(CriarUsuarioDto usuarioDto) {
         try {
