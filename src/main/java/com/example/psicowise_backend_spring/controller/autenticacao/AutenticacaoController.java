@@ -2,6 +2,7 @@ package com.example.psicowise_backend_spring.controller.autenticacao;
 
 import com.example.psicowise_backend_spring.dto.autenticacao.LoginRequestDto;
 import com.example.psicowise_backend_spring.dto.autenticacao.LoginResponseDto;
+import com.example.psicowise_backend_spring.dto.autenticacao.LogoutRequestDto;
 import com.example.psicowise_backend_spring.service.autenticacao.AutenticacaoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,5 +22,10 @@ public class AutenticacaoController {
     public ResponseEntity<LoginResponseDto> login(@RequestBody LoginRequestDto request) {
 
         return autenticacaoService.login(request);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(@RequestBody LogoutRequestDto request) {
+        return autenticacaoService.logout(request.token());
     }
 }
