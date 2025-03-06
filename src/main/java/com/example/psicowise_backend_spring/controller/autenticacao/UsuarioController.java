@@ -18,9 +18,14 @@ public class UsuarioController {
     private UsuarioService usuarioService;
 
     // Endpoint para criar um novo usuário
-    @PostMapping
+    @PostMapping("/criar/comum")
     public ResponseEntity<Usuario> criarUsuario(@RequestBody CriarUsuarioDto usuarioDto) {
-        return usuarioService.CriarUsuario(usuarioDto);
+        return usuarioService.CriarUsuarioComum(usuarioDto);
+    }
+
+    @PostMapping("/criar/psicologo")
+    public ResponseEntity<Usuario> criarUsuarioPsicologo(@RequestBody CriarUsuarioDto usuarioDto) {
+        return usuarioService.CriarUsuarioPsicologo(usuarioDto);
     }
 
     // Endpoint para listar todos os usuários

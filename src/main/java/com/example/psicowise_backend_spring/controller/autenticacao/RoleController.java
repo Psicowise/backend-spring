@@ -1,5 +1,6 @@
 package com.example.psicowise_backend_spring.controller.autenticacao;
 
+import com.example.psicowise_backend_spring.dto.autenticacao.RoleDto;
 import com.example.psicowise_backend_spring.entity.autenticacao.Role;
 import com.example.psicowise_backend_spring.service.autenticacao.RoleService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +39,7 @@ public class RoleController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Role>> listarRoles() {
+    public ResponseEntity<List<RoleDto>> listarRoles() {
         return rolerService.ListarRoles();
     }
 }

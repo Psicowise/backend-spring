@@ -1,46 +1,38 @@
-package com.example.psicowise_backend_spring.entity.autenticacao;
+package com.example.psicowise_backend_spring.entity.consulta;
 
+import com.example.psicowise_backend_spring.entity.consulta.configuracao_financeira.ConfiguracaoPagamento;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "TB_USUARIOS")
 @Data
-@EntityListeners(AuditingEntityListener.class)
-@Inheritance(strategy = InheritanceType.JOINED)
-public class Usuario {
+@Table(name = "TB_PACIENTES")
+public class Paciente {
 
     @Id
-    @Column(name = "id")
+    @Getter
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
-    @Column(name = "nome")
     private String nome;
 
-    @Column(name = "sobrenome")
     private String sobrenome;
 
-    @Column(name = "email", unique = true)
     private String email;
 
-    @Column(name = "senha")
-    private String senha;
+    @ManyToOne
+    @JoinColumn(name = "psicologo_id")
+    private Psicologo psicologo;
 
-    @ManyToMany
-    @JoinTable(name = "TB_USUARIOS_ROLES",
-            joinColumns = @JoinColumn(name = "usuario_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id"))
-    private List<Role> roles;
+    @OneToOne(mappedBy = "paciente", cascade = CascadeType.ALL, orphanRemoval = true)
+    private ConfiguracaoPagamento configuracaoPagamento;
 
     @CreatedDate
     @Temporal(TemporalType.TIMESTAMP)

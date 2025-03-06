@@ -15,4 +15,8 @@ public class HashUtil {
     public String hashPassword(String password) {
         return passwordEncoder.encode(password);
     }
+
+    public boolean verificarSenha(String senhaRaw, String senhaHash) {
+        return passwordEncoder.matches(senhaRaw, senhaHash);
+    }
 }
