@@ -1,5 +1,6 @@
 package com.example.psicowise_backend_spring.service.autenticacao;
 
+import com.example.psicowise_backend_spring.dto.autenticacao.RoleDto;
 import com.example.psicowise_backend_spring.entity.autenticacao.Role;
 import com.example.psicowise_backend_spring.enums.authenticacao.ERole;
 import com.example.psicowise_backend_spring.exception.role.RoleJaExisteException;
@@ -166,7 +167,7 @@ public class RoleServiceTest {
         when(roleRepository.findAll()).thenReturn(roles);
 
         // Act
-        ResponseEntity<List<Role>> resultado = roleService.ListarRoles();
+        ResponseEntity<List<RoleDto>> resultado = roleService.ListarRoles();
 
         // Assert
         assertEquals(HttpStatus.OK, resultado.getStatusCode());
@@ -181,7 +182,7 @@ public class RoleServiceTest {
         when(roleRepository.findAll()).thenReturn(Collections.emptyList());
 
         // Act
-        ResponseEntity<List<Role>> resultado = roleService.ListarRoles();
+        ResponseEntity<List<RoleDto>> resultado = roleService.ListarRoles();
 
         // Assert
         assertEquals(HttpStatus.OK, resultado.getStatusCode());
