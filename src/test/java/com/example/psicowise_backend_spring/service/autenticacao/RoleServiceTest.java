@@ -1,6 +1,7 @@
 package com.example.psicowise_backend_spring.service.autenticacao;
 
 import com.example.psicowise_backend_spring.entity.autenticacao.Role;
+import com.example.psicowise_backend_spring.enums.authenticacao.ERole;
 import com.example.psicowise_backend_spring.exception.role.RoleJaExisteException;
 import com.example.psicowise_backend_spring.exception.role.RoleNaoEncontradaException;
 import com.example.psicowise_backend_spring.repository.autenticacao.RoleRepository;
@@ -37,7 +38,7 @@ public class RoleServiceTest {
         roleId = UUID.randomUUID();
         role = new Role();
         role.setId(roleId);
-        role.setRole("admin");
+        role.setRole(ERole.ADMIN);
     }
 
     @Test
@@ -75,20 +76,27 @@ public class RoleServiceTest {
     @DisplayName("Deve criar role com sucesso")
     void testCriarRoleSucesso() {
         // Arrange
-        String nomeRole = "moderador";
-        Role novaRole = new Role();
-        novaRole.setRole(nomeRole);
+        String roleName = "USER";
+        ERole eRole = ERole.USER;
 
-        when(roleRepository.findByRole(nomeRole)).thenReturn(Optional.empty());
-        when(roleRepository.save(any(Role.class))).thenReturn(novaRole);
+        // Configurar o mock para retornar Optional.empty() quando findByRole é chamado com o enum
+        when(roleRepository.findByRole(eRole)).thenReturn(Optional.empty());
+
+        // Configurar o mock para retornar a role salva
+        when(roleRepository.save(any(Role.class))).thenAnswer(invocation -> {
+            Role savedRole = invocation.getArgument(0);
+            savedRole.setId(UUID.randomUUID());
+            return savedRole;
+        });
 
         // Act
-        ResponseEntity<Role> resultado = roleService.CriarRole(nomeRole);
+        ResponseEntity<Role> resultado = roleService.CriarRole(roleName);
 
         // Assert
         assertEquals(HttpStatus.OK, resultado.getStatusCode());
-        assertEquals(nomeRole, resultado.getBody().getRole());
-        verify(roleRepository, times(1)).findByRole(nomeRole);
+        assertNotNull(resultado.getBody());
+        assertEquals(eRole, resultado.getBody().getRole());
+        verify(roleRepository, times(1)).findByRole(eRole);
         verify(roleRepository, times(1)).save(any(Role.class));
     }
 
@@ -96,16 +104,18 @@ public class RoleServiceTest {
     @DisplayName("Deve lançar exceção ao criar role já existente")
     void testCriarRoleJaExistente() {
         // Arrange
-        String nomeRole = "admin";
-        when(roleRepository.findByRole(nomeRole)).thenReturn(Optional.of(role));
+        String roleName = "ADMIN";
+        ERole eRole = ERole.ADMIN;
+
+        when(roleRepository.findByRole(eRole)).thenReturn(Optional.of(role));
 
         // Act & Assert
         RoleJaExisteException exception = assertThrows(RoleJaExisteException.class, () -> {
-            roleService.CriarRole(nomeRole);
+            roleService.CriarRole(roleName);
         });
 
-        assertEquals("Role 'admin' já existe", exception.getMessage());
-        verify(roleRepository, times(1)).findByRole(nomeRole);
+        assertEquals("Role 'ADMIN' já existe", exception.getMessage());
+        verify(roleRepository, times(1)).findByRole(eRole);
         verify(roleRepository, never()).save(any(Role.class));
     }
 
@@ -149,8 +159,8 @@ public class RoleServiceTest {
         // Arrange
         List<Role> roles = Arrays.asList(
                 role,
-                createRole("usuario"),
-                createRole("moderador")
+                createRole(ERole.USER),
+                createRole(ERole.PSICOLOGO)
         );
 
         when(roleRepository.findAll()).thenReturn(roles);
@@ -179,10 +189,10 @@ public class RoleServiceTest {
         verify(roleRepository, times(1)).findAll();
     }
 
-    private Role createRole(String roleName) {
+    private Role createRole(ERole eRole) {
         Role newRole = new Role();
         newRole.setId(UUID.randomUUID());
-        newRole.setRole(roleName);
+        newRole.setRole(eRole);
         return newRole;
     }
 }

@@ -1,14 +1,15 @@
 package com.example.psicowise_backend_spring.service.autenticacao;
 
 import com.example.psicowise_backend_spring.dto.autenticacao.CriarUsuarioDto;
+import com.example.psicowise_backend_spring.entity.autenticacao.Role;
 import com.example.psicowise_backend_spring.entity.autenticacao.Usuario;
+import com.example.psicowise_backend_spring.enums.authenticacao.ERole;
 import com.example.psicowise_backend_spring.exception.usuario.EmailJaCadastradoException;
 import com.example.psicowise_backend_spring.exception.usuario.RoleNaoEncontradaException;
 import com.example.psicowise_backend_spring.exception.usuario.UsuarioNaoEncontradoException;
 import com.example.psicowise_backend_spring.repository.autenticacao.RoleRepository;
 import com.example.psicowise_backend_spring.repository.autenticacao.UsuarioRepository;
 import com.example.psicowise_backend_spring.util.HashUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -29,7 +30,47 @@ public class UsuarioService {
     }
 
 
-    public ResponseEntity<Usuario> CriarUsuario(CriarUsuarioDto usuarioDto) {
+
+    public ResponseEntity<Usuario> CriarUsuarioPsicologo (CriarUsuarioDto usuarioDto){
+        try {
+
+            var usuario = new Usuario();
+
+            usuario.setNome(usuarioDto.nome());
+            usuario.setSobrenome(usuarioDto.sobrenome());
+
+            // Validar email se o email já está cadastrado
+            if (usuarioRepository.findByEmail(usuarioDto.email()).isPresent()) {
+                throw new EmailJaCadastradoException();
+            }
+
+            usuario.setEmail(usuarioDto.email());
+
+            // Hashizar senha
+            usuario.setSenha(hashUtil.hashPassword(usuarioDto.senha()));
+
+            var roleOpt = roleRepository.findByRole(ERole.PSICOLOGO);
+            if (roleOpt.isPresent()) {
+                usuario.setRoles(List.of(roleOpt.get()));
+            } else {
+                var newRolePsicologo = new Role();
+                newRolePsicologo.setRole(ERole.PSICOLOGO);
+                var usuarioRolePsicologo = roleRepository.save(newRolePsicologo);
+                usuario.setRoles(List.of(usuarioRolePsicologo));
+            }
+
+            usuarioRepository.save(usuario);
+
+            return ResponseEntity.ok(usuario);
+        } catch (EmailJaCadastradoException e) {
+            throw e;
+        } catch (RoleNaoEncontradaException e) {
+            throw e;
+        }
+    }
+
+
+    public ResponseEntity<Usuario> CriarUsuarioComum(CriarUsuarioDto usuarioDto) {
         try {
             var usuario = new Usuario();
 
@@ -47,13 +88,14 @@ public class UsuarioService {
             usuario.setSenha(hashUtil.hashPassword(usuarioDto.senha()));
 
             // Verificar se o role informado existe, caso contrário atribuir o role padrão "usuario"
-            var roleOpt = roleRepository.findByRole(usuarioDto.role());
+            var roleOpt = roleRepository.findByRole(ERole.USER);
             if (roleOpt.isPresent()) {
-                usuario.setRole(roleOpt.get());
+                usuario.setRoles(List.of(roleOpt.get()));
             } else {
-                var usuarioRole = roleRepository.findByRole("usuario")
-                        .orElseThrow(() -> new RoleNaoEncontradaException("usuario"));
-                usuario.setRole(usuarioRole);
+                var newRole = new Role();
+                newRole.setRole(ERole.USER);
+                var usuarioRole = roleRepository.save(newRole);
+                usuario.setRoles(List.of(usuarioRole));
             }
 
             usuarioRepository.save(usuario);

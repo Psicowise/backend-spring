@@ -3,6 +3,7 @@ package com.example.psicowise_backend_spring.service.autenticacao;
 import com.example.psicowise_backend_spring.dto.autenticacao.CriarUsuarioDto;
 import com.example.psicowise_backend_spring.entity.autenticacao.Role;
 import com.example.psicowise_backend_spring.entity.autenticacao.Usuario;
+import com.example.psicowise_backend_spring.enums.authenticacao.ERole;
 import com.example.psicowise_backend_spring.exception.usuario.EmailJaCadastradoException;
 import com.example.psicowise_backend_spring.exception.usuario.RoleNaoEncontradaException;
 import com.example.psicowise_backend_spring.exception.usuario.UsuarioNaoEncontradoException;
@@ -44,6 +45,7 @@ public class UsuarioServiceTest {
     private Usuario usuario;
     private UUID usuarioId;
     private Role role;
+    private ERole eRole;
     private CriarUsuarioDto usuarioDto;
 
     @BeforeEach
@@ -52,7 +54,7 @@ public class UsuarioServiceTest {
 
         role = new Role();
         role.setId(UUID.randomUUID());
-        role.setRole("usuario");
+        role.setRole(ERole.USER);
 
         usuario = new Usuario();
         usuario.setId(usuarioId);
@@ -60,14 +62,13 @@ public class UsuarioServiceTest {
         usuario.setSobrenome("Silva");
         usuario.setEmail("joao.silva@example.com");
         usuario.setSenha("senhaHasheada");
-        usuario.setRole(role);
+        usuario.setRoles(List.of(role));
 
         usuarioDto = new CriarUsuarioDto(
                 "Maria",
                 "Santos",
                 "maria.santos@example.com",
-                "senha123",
-                "usuario"
+                "senha123"
         );
     }
 
@@ -77,7 +78,6 @@ public class UsuarioServiceTest {
         // Arrange
         when(usuarioRepository.findByEmail(usuarioDto.email())).thenReturn(Optional.empty());
         when(hashUtil.hashPassword(usuarioDto.senha())).thenReturn("senhaHasheada");
-        when(roleRepository.findByRole(usuarioDto.role())).thenReturn(Optional.of(role));
         when(usuarioRepository.save(any(Usuario.class))).thenAnswer(invocation -> {
             Usuario savedUsuario = invocation.getArgument(0);
             savedUsuario.setId(UUID.randomUUID());
@@ -85,7 +85,7 @@ public class UsuarioServiceTest {
         });
 
         // Act
-        ResponseEntity<Usuario> resultado = usuarioService.CriarUsuario(usuarioDto);
+        ResponseEntity<Usuario> resultado = usuarioService.CriarUsuarioComum(usuarioDto);
 
         // Assert
         assertEquals(HttpStatus.OK, resultado.getStatusCode());
@@ -95,7 +95,6 @@ public class UsuarioServiceTest {
 
         verify(usuarioRepository, times(1)).findByEmail(usuarioDto.email());
         verify(hashUtil, times(1)).hashPassword(usuarioDto.senha());
-        verify(roleRepository, times(1)).findByRole(usuarioDto.role());
         verify(usuarioRepository, times(1)).save(any(Usuario.class));
     }
 
@@ -107,7 +106,7 @@ public class UsuarioServiceTest {
 
         // Act & Assert
         EmailJaCadastradoException exception = assertThrows(EmailJaCadastradoException.class, () -> {
-            usuarioService.CriarUsuario(usuarioDto);
+            usuarioService.CriarUsuarioComum(usuarioDto);
         });
 
         verify(usuarioRepository, times(1)).findByEmail(usuarioDto.email());
@@ -121,12 +120,10 @@ public class UsuarioServiceTest {
         reset(roleRepository); // Limpa qualquer expectativa anterior
 
         when(usuarioRepository.findByEmail(usuarioDto.email())).thenReturn(Optional.empty());
-        when(roleRepository.findByRole(usuarioDto.role())).thenReturn(Optional.empty());
-        when(roleRepository.findByRole("usuario")).thenReturn(Optional.empty());
 
         // Act & Assert
         RoleNaoEncontradaException exception = assertThrows(RoleNaoEncontradaException.class, () -> {
-            usuarioService.CriarUsuario(usuarioDto);
+            usuarioService.CriarUsuarioComum(usuarioDto);
         });
 
         assertTrue(exception.getMessage().contains("usuario"));
@@ -134,7 +131,6 @@ public class UsuarioServiceTest {
         verify(usuarioRepository, times(1)).findByEmail(usuarioDto.email());
 
         // Usando verificação mais flexível
-        verify(roleRepository, atLeastOnce()).findByRole(anyString());
 
         verify(usuarioRepository, never()).save(any(Usuario.class));
     }
@@ -201,7 +197,7 @@ public class UsuarioServiceTest {
         usuarioAtualizado.setSobrenome("Silva Atualizado");
         usuarioAtualizado.setEmail("joao.silva@example.com");
         usuarioAtualizado.setSenha("senhaHasheada");
-        usuarioAtualizado.setRole(role);
+        usuarioAtualizado.setRoles(List.of(role));
 
         when(usuarioRepository.existsById(usuarioId)).thenReturn(true);
         when(usuarioRepository.findByEmail(usuarioAtualizado.getEmail())).thenReturn(Optional.of(usuario));
@@ -268,7 +264,7 @@ public class UsuarioServiceTest {
         novoUsuario.setSobrenome(sobrenome);
         novoUsuario.setEmail(email);
         novoUsuario.setSenha("senhaHasheada");
-        novoUsuario.setRole(role);
+        novoUsuario.setRoles(List.of(role));
         return novoUsuario;
     }
 }

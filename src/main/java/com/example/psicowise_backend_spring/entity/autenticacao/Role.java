@@ -1,14 +1,15 @@
 package com.example.psicowise_backend_spring.entity.autenticacao;
 
+import com.example.psicowise_backend_spring.enums.authenticacao.ERole;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -22,8 +23,13 @@ public class Role {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
-    @Column(name = "TB_ROLE")
-    private String role;
+    @Column(name = "role")
+    @Enumerated(EnumType.STRING)
+    private ERole role;
+
+    @ManyToMany(mappedBy = "roles")
+    @JsonIgnore
+    private List<Usuario> usuarios;
 
     @CreatedDate
     @Column(name = "created_at")
