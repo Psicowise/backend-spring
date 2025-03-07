@@ -1,0 +1,45 @@
+package com.example.psicowise_backend_spring.entity.autenticacao;
+
+import jakarta.persistence.*;
+import lombok.Data;
+import org.hibernate.annotations.DynamicUpdate;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+@Entity
+@Table(name = "TB_TOKENS_RECUPERACAO_SENHA")
+@Data
+@DynamicUpdate
+@EntityListeners(AuditingEntityListener.class)
+public class TokenRecuperacaoSenha {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private UUID id;
+
+    @Column(name = "token", nullable = false, unique = true)
+    private String token;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "usuario_id", nullable = false)
+    private Usuario usuario;
+
+    @Column(name = "expired")
+    private boolean expired = false;
+
+    @Column(name = "data_expiracao")
+    private LocalDateTime dataExpiracao;
+
+    @CreatedDate
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    // Método utilitário para verificar se o token está expirado
+    @Transient
+    public boolean isExpirado() {
+        return expired || (dataExpiracao != null && dataExpiracao.isBefore(LocalDateTime.now()));
+    }
+}

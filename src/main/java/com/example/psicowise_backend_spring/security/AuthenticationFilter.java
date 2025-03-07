@@ -1,6 +1,7 @@
 package com.example.psicowise_backend_spring.security;
 
 import com.example.psicowise_backend_spring.enums.authenticacao.ERole;
+import com.example.psicowise_backend_spring.service.autenticacao.TokenBlackListService;
 import com.example.psicowise_backend_spring.util.JwtUtil;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,6 +28,7 @@ import java.util.List;
 public class AuthenticationFilter implements Filter {
 
     private final JwtUtil jwtUtil;
+    private final TokenBlackListService tokenBlacklistService;
     private static final String AUTHORIZATION_HEADER = "Authorization";
 
     @Override
@@ -41,6 +43,10 @@ public class AuthenticationFilter implements Filter {
             String token = authorizationHeader.substring(7);
 
             try {
+                if (tokenBlacklistService.isTokenRevogado(token)) {
+                    throw new ServletException("Token revogado");
+                }
+
                 String userId = jwtUtil.extractUserId(token);
 
                 if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -61,7 +67,7 @@ public class AuthenticationFilter implements Filter {
                         // Set the authentication in the SecurityContext
                         SecurityContextHolder.getContext().setAuthentication(authentication);
                     } else {
-                        throw new ServletException("Invalid token");
+                        throw new ServletException("Token inválido");
                     }
                 }
             } catch (Exception ex) {
