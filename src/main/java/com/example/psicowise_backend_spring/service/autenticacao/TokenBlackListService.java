@@ -1,6 +1,6 @@
 package com.example.psicowise_backend_spring.service.autenticacao;
 
-import com.example.psicowise_backend_spring.entity.TokenRevogado;
+import com.example.psicowise_backend_spring.entity.autenticacao.TokenRevogado;
 import com.example.psicowise_backend_spring.repository.autenticacao.TokenRevogadoRepository;
 import com.example.psicowise_backend_spring.util.JwtUtil;
 import lombok.RequiredArgsConstructor;

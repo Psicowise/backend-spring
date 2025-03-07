@@ -1,4 +1,4 @@
-package com.example.psicowise_backend_spring.entity;
+package com.example.psicowise_backend_spring.entity.autenticacao;
 
 import jakarta.persistence.*;
 import lombok.Data;
