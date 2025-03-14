@@ -1,0 +1,26 @@
+﻿spring.application.name=psicowise-backend-spring
+
+spring.datasource.url=jdbc:postgresql://localhost:5432/db-name
+spring.datasource.username=username
+spring.datasource.password=password
+spring.datasource.driver-class-name=org.postgresql.Driver
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+
+jwt.secret.key=your-secret-key
+
+# Configurações de Email
+spring.mail.host=smtp.example.com
+spring.mail.port=587
+spring.mail.username=your-email
+spring.mail.password=your-password
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.starttls.enable=true
+
+# Configurações do Thymeleaf
+spring.thymeleaf.check-template-location=true
+spring.thymeleaf.prefix=classpath:/templates/email/
+spring.thymeleaf.suffix=.html
+
+# URL do Frontend
+app.frontend-url=http://localhost:3000
