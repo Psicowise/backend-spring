@@ -127,7 +127,7 @@ public class AutenticacaoIntegrationTest {
                 .andExpect(jsonPath("$.nome").value("Maria"))
                 .andExpect(jsonPath("$.sobrenome").value("Silva"))
                 .andExpect(jsonPath("$.email").value("maria.silva@example.com"))
-                .andExpect(jsonPath("$.roles[0].role").value(ERole.USER.name()))
+                .andExpect(jsonPath("$.roles[0].role").value(ERole.USER.name())) // Corrigido aqui
                 .andReturn();
 
         String responseContent = result.getResponse().getContentAsString();
