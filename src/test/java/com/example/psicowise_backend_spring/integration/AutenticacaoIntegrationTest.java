@@ -3,6 +3,7 @@ package com.example.psicowise_backend_spring.integration;
 import com.example.psicowise_backend_spring.dto.autenticacao.CriarUsuarioDto;
 import com.example.psicowise_backend_spring.entity.autenticacao.Role;
 import com.example.psicowise_backend_spring.entity.autenticacao.Usuario;
+import com.example.psicowise_backend_spring.enums.authenticacao.ERole;
 import com.example.psicowise_backend_spring.repository.autenticacao.RoleRepository;
 import com.example.psicowise_backend_spring.repository.autenticacao.UsuarioRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -51,12 +52,12 @@ public class AutenticacaoIntegrationTest {
 
         // Criar a role padrão
         roleUsuario = new Role();
-        roleUsuario.setRole("usuario");
+        roleUsuario.setRole(ERole.USER);
         roleRepository.save(roleUsuario);
 
         // Criar role de admin
         Role roleAdmin = new Role();
-        roleAdmin.setRole("admin");
+        roleAdmin.setRole(ERole.ADMIN);
         roleRepository.save(roleAdmin);
     }
 
@@ -67,23 +68,26 @@ public class AutenticacaoIntegrationTest {
         mockMvc.perform(get("/api/roles"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[*].role", containsInAnyOrder("usuario", "admin")));
+                .andExpect(jsonPath("$[*].role", containsInAnyOrder(ERole.USER.name(), ERole.ADMIN.name())));
 
         // Criar nova role - usando Map para corresponder ao parâmetro esperado
         Map<String, String> roleMap = new HashMap<>();
-        roleMap.put("role", "moderador");
+        roleMap.put("role", ERole.PSICOLOGO.name());
 
         mockMvc.perform(post("/api/roles")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(roleMap)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.role").value("moderador"));
+                .andExpect(jsonPath("$.role").value(ERole.PSICOLOGO.name()));
 
         // Verificar se a nova role foi adicionada
         mockMvc.perform(get("/api/roles"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(3)))
-                .andExpect(jsonPath("$[*].role", containsInAnyOrder("usuario", "admin", "moderador")));
+                .andExpect(jsonPath("$[*].role", containsInAnyOrder(
+                        ERole.USER.name(),
+                        ERole.ADMIN.name(),
+                        ERole.PSICOLOGO.name())));
     }
 
     @Test
@@ -91,13 +95,13 @@ public class AutenticacaoIntegrationTest {
     void testCriarRoleDuplicada() throws Exception {
         // Tentar criar role que já existe - usando Map
         Map<String, String> roleMap = new HashMap<>();
-        roleMap.put("role", "usuario");
+        roleMap.put("role", ERole.USER.name());
 
         mockMvc.perform(post("/api/roles")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(roleMap)))
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.message", containsString("Role 'usuario' já existe")));
+                .andExpect(jsonPath("$.message", containsString("Role '" + ERole.USER.name() + "' já existe")));
     }
 
     @Test
@@ -108,20 +112,22 @@ public class AutenticacaoIntegrationTest {
                 "Maria",
                 "Silva",
                 "maria.silva@example.com",
-                "senha123",
-                "usuario"
+                "senha123"
         );
 
         String usuarioJson = objectMapper.writeValueAsString(usuarioDto);
 
-        MvcResult result = mockMvc.perform(post("/api/usuarios")
+        // Adicionando role manualmente ao JSON para o endpoint
+        String jsonWithRole = usuarioJson.replace("}", ",\"role\":\"" + ERole.USER.name() + "\"}");
+
+        MvcResult result = mockMvc.perform(post("/api/usuarios/criar/comum")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(usuarioJson))
+                        .content(jsonWithRole))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.nome").value("Maria"))
                 .andExpect(jsonPath("$.sobrenome").value("Silva"))
                 .andExpect(jsonPath("$.email").value("maria.silva@example.com"))
-                .andExpect(jsonPath("$.role.role").value("usuario"))
+                .andExpect(jsonPath("$.roles[0].role").value(ERole.USER.name()))
                 .andReturn();
 
         String responseContent = result.getResponse().getContentAsString();
@@ -155,13 +161,16 @@ public class AutenticacaoIntegrationTest {
                 "Maria",
                 "Silva",
                 "maria.silva@example.com",
-                "senha123",
-                "usuario"
+                "senha123"
         );
 
-        mockMvc.perform(post("/api/usuarios")
+        // Adicionar role manualmente
+        String jsonWithRole = objectMapper.writeValueAsString(usuarioDto1)
+                .replace("}", ",\"role\":\"" + ERole.USER.name() + "\"}");
+
+        mockMvc.perform(post("/api/usuarios/criar/comum")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(usuarioDto1)))
+                        .content(jsonWithRole))
                 .andExpect(status().isOk());
 
         // Tentar criar outro usuário com o mesmo email
@@ -169,13 +178,16 @@ public class AutenticacaoIntegrationTest {
                 "João",
                 "Santos",
                 "maria.silva@example.com",
-                "outrasenha",
-                "usuario"
+                "outrasenha"
         );
 
-        mockMvc.perform(post("/api/usuarios")
+        // Adicionar role manualmente
+        String jsonWithRole2 = objectMapper.writeValueAsString(usuarioDto2)
+                .replace("}", ",\"role\":\"" + ERole.USER.name() + "\"}");
+
+        mockMvc.perform(post("/api/usuarios/criar/comum")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(usuarioDto2)))
+                        .content(jsonWithRole2))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.message").value("Email já cadastrado"));
     }
@@ -188,13 +200,16 @@ public class AutenticacaoIntegrationTest {
                 "Carlos",
                 "Oliveira",
                 "carlos.oliveira@example.com",
-                "senha123",
-                "usuario"
+                "senha123"
         );
 
-        MvcResult result = mockMvc.perform(post("/api/usuarios")
+        // Adicionar role manualmente
+        String jsonWithRole = objectMapper.writeValueAsString(usuarioDto)
+                .replace("}", ",\"role\":\"" + ERole.USER.name() + "\"}");
+
+        MvcResult result = mockMvc.perform(post("/api/usuarios/criar/comum")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(usuarioDto)))
+                        .content(jsonWithRole))
                 .andExpect(status().isOk())
                 .andReturn();
 
