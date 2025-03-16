@@ -35,3 +35,4 @@ build/
 
 # Ignorar arquivos de configuração com credenciais
 src/main/resources/application.properties
+.env
