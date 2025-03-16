@@ -1,7 +1,6 @@
 name: CI/CD Pipeline
 
 on:
-  # Quando abrir Pull Request para develop ou main, ou quando fizer push na main
   pull_request:
     branches: [ "develop", "main" ]
   push:
@@ -13,7 +12,7 @@ jobs:
 
     steps:
       - name: Check out code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up JDK 17
         uses: actions/setup-java@v2
@@ -25,16 +24,13 @@ jobs:
         run: mvn clean test
 
   deploy:
-    # Só será executado se:
-    # 1) O job "build_and_test" tiver sucesso (needs).
-    # 2) O evento for um push (não PR) na branch main.
     needs: build_and_test
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/main')
 
     steps:
       - name: Check out code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up JDK 17
         uses: actions/setup-java@v2
@@ -45,20 +41,23 @@ jobs:
       - name: Build .jar (sem rodar testes de novo)
         run: mvn clean package -DskipTests
 
-      - name: Add SSH key
-        uses: webfactory/ssh-agent@v0.5.4
-        with:
-          ssh-private-key: ${{ secrets.EASYPANEL_SSH_KEY }}
+      - name: Login no GitHub Container Registry (GHCR)
+        run: echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-      - name: Deploy to VPS
+      - name: Construir e enviar a imagem para GHCR
         run: |
-          ssh -o StrictHostKeyChecking=no deploy@SEU_IP_VPS << 'ENDSSH'
-            # 1. Ir para a pasta onde está o repositório clonado na VPS
-            cd /home/deploy/SEU_REPO
+          docker build -t ghcr.io/${{ github.repository_owner }}/psicowise-backend:latest .
+          docker push ghcr.io/${{ github.repository_owner }}/psicowise-backend:latest
 
-            # 2. Atualizar código
-            git pull origin main
-
-            # 3. Subir container (construindo localmente a imagem)
-            docker-compose up -d --build
-          ENDSSH
+      - name: Deploy na VPS via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: deploy
+          key: ${{ secrets.EASYPANEL_SSH_KEY }}
+          script: |
+            docker login ghcr.io -u ${{ github.actor }} --password ${{ secrets.GHCR_PAT }}
+            docker pull ghcr.io/${{ github.repository_owner }}/psicowise-backend:latest
+            docker stop psicowise_backend || true
+            docker rm psicowise_backend || true
+            docker run -d --name psicowise_backend -p 8081:8080 --env-file .env ghcr.io/${{ github.repository_owner }}/psicowise-backend:latest
