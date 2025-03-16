@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  backend:
+    container_name: psicowise_backend
+    # "build" indica que vamos construir a imagem localmente a partir do Dockerfile
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      # Ajuste conforme seu RDS
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://SEU_RDS_ENDPOINT:5432/SEU_BANCO"
+      SPRING_DATASOURCE_USERNAME: "SEU_USUARIO"
+      SPRING_DATASOURCE_PASSWORD: "SUA_SENHA"
+    restart: always
