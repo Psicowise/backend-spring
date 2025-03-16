@@ -56,8 +56,8 @@ jobs:
           username: deploy
           key: ${{ secrets.EASYPANEL_SSH_KEY }}
           script: |
+            cd /home/deploy/psicowise
+            git pull origin main
             docker login ghcr.io -u ${{ github.actor }} --password ${{ secrets.GHCR_PAT }}
-            docker pull ghcr.io/${{ github.repository_owner }}/psicowise-backend:latest
-            docker stop psicowise_backend || true
-            docker rm psicowise_backend || true
-            docker run -d --name psicowise_backend -p 8081:8080 --env-file .env ghcr.io/${{ github.repository_owner }}/psicowise-backend:latest
+            docker-compose pull backend
+            docker-compose up -d --build backend
