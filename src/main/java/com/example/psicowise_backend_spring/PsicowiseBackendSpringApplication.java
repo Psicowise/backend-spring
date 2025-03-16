@@ -11,8 +11,10 @@ public class PsicowiseBackendSpringApplication {
 
 	public static void main(String[] args) {
 
-		Dotenv dotenv = Dotenv.load();
-		dotenv.entries().forEach(entry -> System.setProperty(entry.getKey(), entry.getValue()));
+		if (System.getenv("SPRING_DATASOURCE_URL") == null) {
+			Dotenv dotenv = Dotenv.load();
+			dotenv.entries().forEach(entry -> System.setProperty(entry.getKey(), entry.getValue()));
+		}
 
 		SpringApplication.run(PsicowiseBackendSpringApplication.class, args);
 	}
