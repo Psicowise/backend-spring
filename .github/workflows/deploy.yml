@@ -20,8 +20,17 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+
+      - name: Definir variáveis de ambiente para testes
+        run: |
+          echo "MAIL_HOST=${{ secrets.MAIL_HOST }}" >> $GITHUB_ENV
+          echo "MAIL_PORT=${{ secrets.MAIL_PORT }}" >> $GITHUB_ENV
+          echo "MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}" >> $GITHUB_ENV
+          echo "MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}" >> $GITHUB_ENV
+      
+
       - name: Build and run tests
-        run: mvn clean test
+        run: mvn clean test -Dspring.profiles.active=test
 
   deploy:
     needs: build_and_test
