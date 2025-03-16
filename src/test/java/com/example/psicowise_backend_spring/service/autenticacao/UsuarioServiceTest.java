@@ -78,6 +78,7 @@ public class UsuarioServiceTest {
         // Arrange
         when(usuarioRepository.findByEmail(usuarioDto.email())).thenReturn(Optional.empty());
         when(hashUtil.hashPassword(usuarioDto.senha())).thenReturn("senhaHasheada");
+        when(roleRepository.findByRole(ERole.USER)).thenReturn(Optional.of(role));
         when(usuarioRepository.save(any(Usuario.class))).thenAnswer(invocation -> {
             Usuario savedUsuario = invocation.getArgument(0);
             savedUsuario.setId(UUID.randomUUID());
@@ -114,25 +115,28 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    @DisplayName("Deve lançar exceção quando role padrão não encontrada")
+    @DisplayName("Deve criar nova role quando role padrão não encontrada")
     void testCriarUsuarioRolePadraoNaoEncontrada() {
         // Arrange
-        reset(roleRepository); // Limpa qualquer expectativa anterior
-
         when(usuarioRepository.findByEmail(usuarioDto.email())).thenReturn(Optional.empty());
+        when(hashUtil.hashPassword(usuarioDto.senha())).thenReturn("senhaHasheada");
+        when(roleRepository.findByRole(ERole.USER)).thenReturn(Optional.empty());
 
-        // Act & Assert
-        RoleNaoEncontradaException exception = assertThrows(RoleNaoEncontradaException.class, () -> {
-            usuarioService.CriarUsuarioComum(usuarioDto);
-        });
+        Role novaRole = new Role();
+        novaRole.setId(UUID.randomUUID());
+        novaRole.setRole(ERole.USER);
 
-        assertTrue(exception.getMessage().contains("usuario"));
+        when(roleRepository.save(any(Role.class))).thenReturn(novaRole);
+        when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuario);
 
-        verify(usuarioRepository, times(1)).findByEmail(usuarioDto.email());
+        // Act
+        ResponseEntity<Usuario> resultado = usuarioService.CriarUsuarioComum(usuarioDto);
 
-        // Usando verificação mais flexível
-
-        verify(usuarioRepository, never()).save(any(Usuario.class));
+        // Assert
+        assertEquals(HttpStatus.OK, resultado.getStatusCode());
+        verify(roleRepository, times(1)).findByRole(ERole.USER);
+        verify(roleRepository, times(1)).save(any(Role.class));
+        verify(usuarioRepository, times(1)).save(any(Usuario.class));
     }
 
     @Test
