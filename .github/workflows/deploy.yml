@@ -23,11 +23,11 @@ jobs:
 
       - name: Definir variáveis de ambiente para testes
         run: |
-          echo "MAIL_HOST=fake.mailserver.com" >> $GITHUB_ENV
-          echo "MAIL_PORT=587" >> $GITHUB_ENV
-          echo "MAIL_USERNAME=testuser" >> $GITHUB_ENV
-          echo "MAIL_PASSWORD=testpassword" >> $GITHUB_ENV
-
+          echo "MAIL_HOST=${{ secrets.MAIL_HOST }}" >> $GITHUB_ENV
+          echo "MAIL_PORT=${{ secrets.MAIL_PORT }}" >> $GITHUB_ENV
+          echo "MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}" >> $GITHUB_ENV
+          echo "MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}" >> $GITHUB_ENV
+      
 
       - name: Build and run tests
         run: mvn clean test -Dspring.profiles.active=test
