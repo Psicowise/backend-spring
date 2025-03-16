@@ -1,10 +1,15 @@
 package com.example.psicowise_backend_spring.config;
 
+import com.example.psicowise_backend_spring.service.autenticacao.RecuperacaoSenhaService;
+import com.example.psicowise_backend_spring.util.EmailUtil;
+import com.example.psicowise_backend_spring.util.JwtUtil;
+import org.mockito.Mockito;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.mail.javamail.JavaMailSender;
 
 @TestConfiguration
 @Profile("test")
@@ -21,5 +26,29 @@ public class TestConfig {
         dataSource.setPassword("");
 
         return dataSource;
+    }
+
+    @Bean
+    @Primary
+    public JavaMailSender javaMailSender() {
+        return Mockito.mock(JavaMailSender.class);
+    }
+
+    @Bean
+    @Primary
+    public EmailUtil emailUtil() {
+        return Mockito.mock(EmailUtil.class);
+    }
+
+    @Bean
+    @Primary
+    public JwtUtil jwtUtil() {
+        return Mockito.mock(JwtUtil.class);
+    }
+
+    @Bean
+    @Primary
+    public RecuperacaoSenhaService recuperacaoSenhaService() {
+        return Mockito.mock(RecuperacaoSenhaService.class);
     }
 }
