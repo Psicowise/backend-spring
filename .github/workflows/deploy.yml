@@ -21,7 +21,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Build and run tests
-        run: mvn clean test
+        run: mvn clean test -Dspring.profiles.active=test
 
   deploy:
     needs: build_and_test
