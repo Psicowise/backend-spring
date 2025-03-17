@@ -20,14 +20,12 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-
       - name: Definir variáveis de ambiente para testes
         run: |
           echo "MAIL_HOST=${{ secrets.MAIL_HOST }}" >> $GITHUB_ENV
           echo "MAIL_PORT=${{ secrets.MAIL_PORT }}" >> $GITHUB_ENV
           echo "MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}" >> $GITHUB_ENV
           echo "MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}" >> $GITHUB_ENV
-      
 
       - name: Build and run tests
         run: mvn clean test -Dspring.profiles.active=test
@@ -58,15 +56,6 @@ jobs:
           docker build -t ghcr.io/raphaelduarte/psicowise-backend:latest .
           docker push ghcr.io/raphaelduarte/psicowise-backend:latest
 
-      - name: Deploy na VPS via SSH
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: deploy
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          script: |
-            cd /home/deploy/psicowise
-            git pull origin main
-            docker login ghcr.io -u ${{ github.actor }} --password ${{ secrets.GHCR_PAT }}
-            docker-compose pull backend
-            docker-compose up -d --build backend
+      - name: Deploy na VPS via Webhook
+        run: |
+          curl -X POST "${{ secrets.EASYPANEL_DEPLOY_URL }}"
