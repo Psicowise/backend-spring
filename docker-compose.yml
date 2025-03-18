@@ -1,6 +1,6 @@
 services:
   backend:
-    container_name: psicowise_backend
+    container_name: psicowise_backend_v2
     image: ghcr.io/psicowise/psicowise-backend:latest
     restart: always
     ports:
