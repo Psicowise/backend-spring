@@ -1,7 +1,7 @@
 services:
   backend:
     container_name: psicowise_backend_v2
-    image: ghcr.io/psicowise/psicowise-backend:latest
+    image: raphaelduartess/psicowise-backend:latest
     restart: always
     ports:
       - "8081:8080"
