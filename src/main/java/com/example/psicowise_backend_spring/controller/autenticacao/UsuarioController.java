@@ -1,6 +1,7 @@
 package com.example.psicowise_backend_spring.controller.autenticacao;
 
 import com.example.psicowise_backend_spring.dto.autenticacao.CriarUsuarioDto;
+import com.example.psicowise_backend_spring.dto.autenticacao.UsuarioLogadoDto;
 import com.example.psicowise_backend_spring.entity.autenticacao.Usuario;
 import com.example.psicowise_backend_spring.service.autenticacao.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,5 +51,10 @@ public class UsuarioController {
     @PutMapping
     public ResponseEntity<Usuario> atualizarUsuario(@RequestBody Usuario usuario) {
         return usuarioService.AtualizarUsuario(usuario);
+    }
+
+    @GetMapping("/buscar_por_email_usuario_logado")
+    public ResponseEntity<UsuarioLogadoDto> buscarPorEmailUsuarioLogado() {
+        return usuarioService.pegarUsuarioLogado();
     }
 }

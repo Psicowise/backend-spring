@@ -1,19 +1,26 @@
 package com.example.psicowise_backend_spring.service.autenticacao;
 
 import com.example.psicowise_backend_spring.dto.autenticacao.CriarUsuarioDto;
+import com.example.psicowise_backend_spring.dto.autenticacao.UsuarioLogadoDto;
 import com.example.psicowise_backend_spring.entity.autenticacao.Role;
 import com.example.psicowise_backend_spring.entity.autenticacao.Usuario;
 import com.example.psicowise_backend_spring.enums.authenticacao.ERole;
 import com.example.psicowise_backend_spring.exception.usuario.EmailJaCadastradoException;
 import com.example.psicowise_backend_spring.exception.usuario.RoleNaoEncontradaException;
 import com.example.psicowise_backend_spring.exception.usuario.UsuarioNaoEncontradoException;
+import com.example.psicowise_backend_spring.mappers.autenticacao.UsuarioMapper;
 import com.example.psicowise_backend_spring.repository.autenticacao.RoleRepository;
 import com.example.psicowise_backend_spring.repository.autenticacao.UsuarioRepository;
 import com.example.psicowise_backend_spring.util.HashUtil;
+import org.apache.logging.log4j.message.StringFormattedMessage;
+import org.springframework.expression.ExpressionException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -22,11 +29,17 @@ public class UsuarioService {
     private UsuarioRepository usuarioRepository;
     private RoleRepository roleRepository;
     private HashUtil hashUtil;
+    private UsuarioMapper usuarioMapper;
 
-    public UsuarioService(UsuarioRepository usuarioRepository, RoleRepository roleRepository, HashUtil hashUtil) {
+    public UsuarioService(
+            UsuarioRepository usuarioRepository,
+            RoleRepository roleRepository,
+            HashUtil hashUtil,
+            UsuarioMapper usuarioMapper) {
         this.usuarioRepository = usuarioRepository;
         this.roleRepository = roleRepository;
         this.hashUtil = hashUtil;
+        this.usuarioMapper = usuarioMapper;
     }
 
 
@@ -163,5 +176,35 @@ public class UsuarioService {
             System.err.println("Erro ao atualizar usuário: " + e.getMessage());
             throw e;
         }
+    }
+
+    private UsuarioLogadoDto buscarPorEmail(String email) {
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new ExpressionException("Usuário não encontrado com o email: " + email));
+
+        return usuarioMapper.converterParaDTO(usuario);
+    }
+
+    public ResponseEntity<UsuarioLogadoDto> pegarUsuarioLogado (){
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        // Obter o ID do usuário autenticado em formato de string
+        String idString = auth.getName();
+
+        // Converter a string para UUID
+        UUID usuarioId;
+        try {
+            usuarioId = UUID.fromString(idString);
+        } catch (IllegalArgumentException e) {
+            throw new UsuarioNaoEncontradoException("ID inválido: " + idString);
+        }
+
+        // Buscar o usuário pelo ID
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new UsuarioNaoEncontradoException("id: " + usuarioId));
+
+        UsuarioLogadoDto usuarioLogado = usuarioMapper.converterParaDTO(usuario);
+
+        return ResponseEntity.ok(usuarioLogado);
     }
 }
