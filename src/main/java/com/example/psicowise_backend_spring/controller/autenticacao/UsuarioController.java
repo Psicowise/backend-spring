@@ -53,8 +53,8 @@ public class UsuarioController {
         return usuarioService.AtualizarUsuario(usuario);
     }
 
-    @GetMapping("/buscar_por_email_usuario_logado")
-    public ResponseEntity<UsuarioLogadoDto> buscarPorEmailUsuarioLogado() {
-        return usuarioService.pegarUsuarioLogado();
+    @GetMapping("/buscar_usuario_logado")
+    public ResponseEntity<UsuarioLogadoDto> buscarUsuarioLogado() {
+        return usuarioService.PegarUsuarioLogado();
     }
 }

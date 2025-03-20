@@ -185,7 +185,7 @@ public class UsuarioService {
         return usuarioMapper.converterParaDTO(usuario);
     }
 
-    public ResponseEntity<UsuarioLogadoDto> pegarUsuarioLogado (){
+    public ResponseEntity<UsuarioLogadoDto> PegarUsuarioLogado (){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         // Obter o ID do usuário autenticado em formato de string
