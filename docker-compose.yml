@@ -1,10 +1,10 @@
 services:
-  backend-v2:
-    container_name: psicowise_backend_v2
+  backend-v3:
+    container_name: psicowise_backend_v3
     image: raphaelduartess/psicowise-backend:latest
     restart: always
     ports:
-      - "8082:8080"
+      - "8083:8080"
     environment:
       SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
       SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
