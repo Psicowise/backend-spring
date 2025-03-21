@@ -82,7 +82,7 @@ jobs:
 
           while [ $RETRY_COUNT -lt $MAX_RETRIES ] && [ $DEPLOY_SUCCESS == false ]
           do
-            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://psicowise-backend-v2.6qp1vk.easyp/health)
+            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://psicowise-backend-v2.6qp1vk.easypanel/health)
             if [ $HTTP_STATUS -eq 200 ]; then
               echo "✅ Deploy concluído com sucesso!"
               DEPLOY_SUCCESS=true
