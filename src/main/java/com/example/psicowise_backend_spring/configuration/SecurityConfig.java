@@ -45,7 +45,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/usuarios/**").permitAll()  // Allow login without authentication
                         .requestMatchers("/api/roles/**").permitAll()
                         .requestMatchers("/api/autenticacao/**").permitAll()
-                        .requestMatchers("/health").permitAll()
+                        .requestMatchers("/health", "/actuator/health").permitAll()
                         .anyRequest().authenticated()  // Secure all other endpoints
                 )
                 .csrf(AbstractHttpConfigurer::disable)
