@@ -72,8 +72,8 @@ jobs:
 
       - name: Aguardar e verificar deploy
         run: |
-          echo "Aguardando 45 segundos para o deploy concluir..."
-          sleep 45
+          echo "Aguardando 150 segundos para o deploy concluir..."
+          sleep 150
 
           # Tentar até 5 vezes com intervalo de 10 segundos
           MAX_RETRIES=5
