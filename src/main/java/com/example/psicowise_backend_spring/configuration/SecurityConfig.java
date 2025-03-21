@@ -42,10 +42,10 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 // Disable CSRF protection for stateless APIs
                 .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers("/health", "/actuator/health").permitAll()
                         .requestMatchers("/api/usuarios/**").permitAll()  // Allow login without authentication
                         .requestMatchers("/api/roles/**").permitAll()
                         .requestMatchers("/api/autenticacao/**").permitAll()
-                        .requestMatchers("/health", "/actuator/health").permitAll()
                         .anyRequest().authenticated()  // Secure all other endpoints
                 )
                 .csrf(AbstractHttpConfigurer::disable)
