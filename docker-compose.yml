@@ -1,5 +1,5 @@
 services:
-  backend:
+  backend-v2:
     container_name: psicowise_backend_v2
     image: raphaelduartess/psicowise-backend:latest
     restart: always
