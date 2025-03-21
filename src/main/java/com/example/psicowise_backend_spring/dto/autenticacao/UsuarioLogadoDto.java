@@ -18,6 +18,7 @@ public class UsuarioLogadoDto {
     private String nome;
     private String sobrenome;
     private List<Role> roles;
+    private String senha;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

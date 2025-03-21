@@ -10,6 +10,5 @@ import java.util.UUID;
 
 @Repository
 public interface PsicologoRepository extends JpaRepository<Psicologo, UUID> {
-    Optional<Psicologo> findByCrp(String crp);
-    List<Psicologo> findByEspecialidade(String especialidade);
+    Optional<Psicologo> findByUsuarioId(UUID usuarioId);
 }

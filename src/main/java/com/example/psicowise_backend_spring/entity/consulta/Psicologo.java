@@ -2,25 +2,39 @@ package com.example.psicowise_backend_spring.entity.consulta;
 
 import com.example.psicowise_backend_spring.entity.autenticacao.Usuario;
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
-@EqualsAndHashCode(callSuper = true)
 @Entity
 @Data
 @Table(name = "TB_PSICOLOGOS")
-public class Psicologo extends Usuario {
+@EntityListeners(AuditingEntityListener.class)
+public class Psicologo {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private UUID id;
 
     @Column(name = "crp", unique = true)
     private String crp;
 
-    @Column(name = "especialidade")
-    private String especialidade;
+    @OneToOne
+    @JoinColumn(name = "usuario_id")
+    private Usuario usuario;
+
+    @ManyToMany
+    @JoinTable(
+            name = "TB_PSICOLOGOS_ESPECIALIDADES",
+            joinColumns = @JoinColumn(name = "psicologo_id"),
+            inverseJoinColumns = @JoinColumn(name = "especialidade_id")
+    )
+    private List<Especialidade> especialidades;
 
     @OneToMany(mappedBy = "psicologo")
     private List<Paciente> pacientes;
