@@ -82,7 +82,14 @@ jobs:
 
           while [ $RETRY_COUNT -lt $MAX_RETRIES ] && [ $DEPLOY_SUCCESS == false ]
           do
-            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://psicowise-backend-v2.6qp1vk.easypanel.host:8082/health)
+            # Testar primeiro com HTTPS
+            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -k https://psicowise-backend-v2.6qp1vk.easypanel.host:8082/health)
+
+            # Se falhar, tentar com HTTP
+            if [ $HTTP_STATUS -ne 200 ]; then
+              HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://psicowise-backend-v2.6qp1vk.easypanel.host:8082/health)
+            fi
+
             if [ $HTTP_STATUS -eq 200 ]; then
               echo "✅ Deploy concluído com sucesso!"
               DEPLOY_SUCCESS=true
