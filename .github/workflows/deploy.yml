@@ -26,6 +26,8 @@ jobs:
           echo "MAIL_PORT=${{ secrets.MAIL_PORT }}" >> $GITHUB_ENV
           echo "MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}" >> $GITHUB_ENV
           echo "MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}" >> $GITHUB_ENV
+          echo "ZAPI_INSTANCE_ID"=${{ secrets.ZAPI_INSTANCE_ID }}" >> $GITHUB_ENV
+          echo "ZAPI_TOKEN"=${{ secrets.ZAPI_TOKEN }}" >> $GITHUB_ENV
 
       - name: Build and run tests
         run: mvn clean test -Dspring.profiles.active=test
