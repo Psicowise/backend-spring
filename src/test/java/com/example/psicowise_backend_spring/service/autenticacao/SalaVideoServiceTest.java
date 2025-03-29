@@ -1,4 +1,4 @@
-package com.example.psicowise_backend_spring.service.consultas;
+package com.example.psicowise_backend_spring.service.autenticacao;
 
 import com.example.psicowise_backend_spring.dto.consultas.SalaVideoDto;
 import com.example.psicowise_backend_spring.entity.autenticacao.Usuario;
@@ -9,6 +9,7 @@ import com.example.psicowise_backend_spring.entity.consulta.SalaVideo;
 import com.example.psicowise_backend_spring.repository.consulta.ConsultaRepository;
 import com.example.psicowise_backend_spring.repository.consulta.PsicologoRepository;
 import com.example.psicowise_backend_spring.repository.consulta.SalaVideoRepository;
+import com.example.psicowise_backend_spring.service.consultas.SalaVideoService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
