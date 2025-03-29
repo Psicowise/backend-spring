@@ -12,6 +12,5 @@ public record CriarTelefoneDto(
         boolean principal,
         boolean whatsapp,
         String observacao,
-        UUID pacienteId,
-        UUID psicologoId
+        UUID pacienteId
 ) {}

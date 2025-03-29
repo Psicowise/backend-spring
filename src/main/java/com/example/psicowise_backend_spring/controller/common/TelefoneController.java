@@ -57,6 +57,19 @@ public class TelefoneController {
         return telefoneService.buscarTelefonePorId(id);
     }
 
+
+    /**
+     * Busca um telefone pelo ID do paciente
+     *
+     * @param pacienteId ID do paciente
+     * @return O telefone encontrado
+     */
+    @GetMapping("/paciente/whatsapp/{pacienteId}")
+    public ResponseEntity<String> buscarWhatsappDoPaciente(@PathVariable UUID pacienteId) {
+        String telefone = telefoneService.obterTelefoneWhatsappPaciente(pacienteId);
+        return ResponseEntity.ok(telefone);
+    }
+
     /**
      * Exclui um telefone
      *
@@ -84,12 +97,11 @@ public class TelefoneController {
     /**
      * Lista todos os telefones de um psicólogo
      *
-     * @param psicologoId ID do psicólogo
      * @return Lista de telefones
      */
-    @GetMapping("/psicologo/{psicologoId}")
+    @GetMapping("/psicologo/")
     @PreAuthorize("hasAnyRole('PSICOLOGO', 'ADMIN')")
-    public ResponseEntity<List<TelefoneDto>> listarTelefonesPorPsicologo(@PathVariable UUID psicologoId) {
-        return telefoneService.listarTelefonesPorPsicologo(psicologoId);
+    public ResponseEntity<List<TelefoneDto>> listarTelefonesPorPsicologo() {
+        return telefoneService.listarTelefonesPorPsicologo();
     }
 }

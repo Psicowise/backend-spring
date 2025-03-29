@@ -8,6 +8,7 @@ import com.example.psicowise_backend_spring.entity.consulta.Psicologo;
 import com.example.psicowise_backend_spring.repository.common.TelefoneRepository;
 import com.example.psicowise_backend_spring.repository.consulta.PacienteRepository;
 import com.example.psicowise_backend_spring.repository.consulta.PsicologoRepository;
+import com.example.psicowise_backend_spring.service.autenticacao.UsuarioService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -26,6 +27,7 @@ public class TelefoneService {
     private final TelefoneRepository telefoneRepository;
     private final PacienteRepository pacienteRepository;
     private final PsicologoRepository psicologoRepository;
+    private final UsuarioService usuarioService;
 
     /**
      * Cria um novo telefone
@@ -58,8 +60,9 @@ public class TelefoneService {
             }
 
             // Verificar se deve ser associado a um psicólogo
-            if (dto.psicologoId() != null) {
-                Psicologo psicologo = psicologoRepository.findById(dto.psicologoId())
+            if (usuarioService.PegarUsuarioLogado() != null) {
+                Psicologo psicologo = psicologoRepository
+                        .findByUsuarioId(usuarioService.PegarUsuarioLogado().getBody().getId())
                         .orElseThrow(() -> new RuntimeException("Psicólogo não encontrado"));
                 telefone.setPsicologo(psicologo);
 
@@ -178,12 +181,12 @@ public class TelefoneService {
     /**
      * Lista todos os telefones de um psicólogo
      *
-     * @param psicologoId ID do psicólogo
      * @return Lista de telefones
      */
-    public ResponseEntity<List<TelefoneDto>> listarTelefonesPorPsicologo(UUID psicologoId) {
+    public ResponseEntity<List<TelefoneDto>> listarTelefonesPorPsicologo() {
         try {
-            List<Telefone> telefones = telefoneRepository.findByPsicologoId(psicologoId);
+            UUID usuarioId = usuarioService.PegarUsuarioLogado().getBody().getId();
+            List<Telefone> telefones = telefoneRepository.findByPsicologoId(usuarioId);
 
             List<TelefoneDto> telefonesDto = telefones.stream()
                     .map(this::converterParaDto)
