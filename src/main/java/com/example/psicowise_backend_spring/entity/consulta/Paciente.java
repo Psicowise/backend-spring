@@ -2,11 +2,10 @@ package com.example.psicowise_backend_spring.entity.consulta;
 
 import com.example.psicowise_backend_spring.entity.common.Telefone;
 import com.example.psicowise_backend_spring.entity.consulta.configuracao_financeira.ConfiguracaoPagamento;
+import com.example.psicowise_backend_spring.enums.common.TipoProprietario;
 import com.example.psicowise_backend_spring.util.TelefoneUtil;
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
@@ -21,7 +20,6 @@ import java.util.UUID;
 public class Paciente {
 
     @Id
-    @Getter
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
@@ -35,10 +33,12 @@ public class Paciente {
     @JoinColumn(name = "psicologo_id")
     private Psicologo psicologo;
 
-    @OneToOne(mappedBy = "paciente", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "configuracao_pagamento_id")
     private ConfiguracaoPagamento configuracaoPagamento;
 
-    @OneToMany(mappedBy = "paciente", cascade = CascadeType.ALL, orphanRemoval = true)
+    // Lista de telefones como campo transiente - não é mapeada diretamente no banco
+    @Transient
     private List<Telefone> telefones = new ArrayList<>();
 
     /**

@@ -1,8 +1,7 @@
 package com.example.psicowise_backend_spring.repository.common;
 
 import com.example.psicowise_backend_spring.entity.common.Telefone;
-import com.example.psicowise_backend_spring.entity.consulta.Paciente;
-import com.example.psicowise_backend_spring.entity.consulta.Psicologo;
+import com.example.psicowise_backend_spring.enums.common.TipoProprietario;
 import com.example.psicowise_backend_spring.enums.common.TipoTelefone;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -16,27 +15,31 @@ import java.util.UUID;
 @Repository
 public interface TelefoneRepository extends JpaRepository<Telefone, UUID> {
 
-    List<Telefone> findByPaciente(Paciente paciente);
+    List<Telefone> findByProprietarioId(UUID proprietarioId);
 
-    List<Telefone> findByPacienteId(UUID pacienteId);
+    List<Telefone> findByTipoProprietario(TipoProprietario tipoProprietario);
 
-    List<Telefone> findByPsicologo(Psicologo psicologo);
+    List<Telefone> findByProprietarioIdAndTipoProprietario(UUID proprietarioId, TipoProprietario tipoProprietario);
 
-    List<Telefone> findByPsicologoId(UUID psicologoId);
+    List<Telefone> findByProprietarioIdAndTipoProprietarioAndTipo(
+            UUID proprietarioId, TipoProprietario tipoProprietario, TipoTelefone tipo);
 
-    List<Telefone> findByPacienteAndTipo(Paciente paciente, TipoTelefone tipo);
-
-    List<Telefone> findByPsicologoAndTipo(Psicologo psicologo, TipoTelefone tipo);
-
-    Optional<Telefone> findByPacienteAndPrincipal(Paciente paciente, boolean principal);
-
-    Optional<Telefone> findByPsicologoAndPrincipal(Psicologo psicologo, boolean principal);
+    Optional<Telefone> findByProprietarioIdAndTipoProprietarioAndPrincipal(
+            UUID proprietarioId, TipoProprietario tipoProprietario, boolean principal);
 
     List<Telefone> findByWhatsapp(boolean whatsapp);
 
-    @Query("SELECT t FROM Telefone t WHERE t.paciente.id = :pacienteId AND t.whatsapp = true ORDER BY t.principal DESC")
-    List<Telefone> findWhatsappByPacienteId(@Param("pacienteId") UUID pacienteId);
+    List<Telefone> findByProprietarioIdAndTipoProprietarioAndWhatsapp(
+            UUID proprietarioId, TipoProprietario tipoProprietario, boolean whatsapp);
 
-    @Query("SELECT t FROM Telefone t WHERE t.psicologo.id = :psicologoId AND t.whatsapp = true ORDER BY t.principal DESC")
-    List<Telefone> findWhatsappByPsicologoId(@Param("psicologoId") UUID psicologoId);
+    @Query("SELECT t FROM Telefone t WHERE t.proprietarioId = :proprietarioId AND t.tipoProprietario = :tipoProprietario AND t.whatsapp = true ORDER BY t.principal DESC")
+    List<Telefone> findWhatsappByProprietario(
+            @Param("proprietarioId") UUID proprietarioId,
+            @Param("tipoProprietario") TipoProprietario tipoProprietario);
+
+    /**
+     * Encontra telefones que precisam ser migrados (não possuem proprietarioId ou tipoProprietario)
+     */
+    @Query("SELECT t FROM Telefone t WHERE t.proprietarioId IS NULL OR t.tipoProprietario IS NULL")
+    List<Telefone> findByProprietarioIdIsNullOrTipoProprietarioIsNull();
 }

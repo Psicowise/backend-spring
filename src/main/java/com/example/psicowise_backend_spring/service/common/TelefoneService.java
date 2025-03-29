@@ -3,11 +3,8 @@ package com.example.psicowise_backend_spring.service.common;
 import com.example.psicowise_backend_spring.dto.common.CriarTelefoneDto;
 import com.example.psicowise_backend_spring.dto.common.TelefoneDto;
 import com.example.psicowise_backend_spring.entity.common.Telefone;
-import com.example.psicowise_backend_spring.entity.consulta.Paciente;
-import com.example.psicowise_backend_spring.entity.consulta.Psicologo;
+import com.example.psicowise_backend_spring.enums.common.TipoProprietario;
 import com.example.psicowise_backend_spring.repository.common.TelefoneRepository;
-import com.example.psicowise_backend_spring.repository.consulta.PacienteRepository;
-import com.example.psicowise_backend_spring.repository.consulta.PsicologoRepository;
 import com.example.psicowise_backend_spring.service.autenticacao.UsuarioService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -25,8 +21,6 @@ import java.util.stream.Collectors;
 public class TelefoneService {
 
     private final TelefoneRepository telefoneRepository;
-    private final PacienteRepository pacienteRepository;
-    private final PsicologoRepository psicologoRepository;
     private final UsuarioService usuarioService;
 
     /**
@@ -46,30 +40,12 @@ public class TelefoneService {
             telefone.setPrincipal(dto.principal());
             telefone.setWhatsapp(dto.whatsapp());
             telefone.setObservacao(dto.observacao());
+            telefone.setProprietarioId(dto.proprietarioId());
+            telefone.setTipoProprietario(dto.tipoProprietario());
 
-            // Verificar se deve ser associado a um paciente
-            if (dto.pacienteId() != null) {
-                Paciente paciente = pacienteRepository.findById(dto.pacienteId())
-                        .orElseThrow(() -> new RuntimeException("Paciente não encontrado"));
-                telefone.setPaciente(paciente);
-
-                // Se for definido como principal, desativar outros telefones principais
-                if (dto.principal()) {
-                    atualizarTelefonePrincipalPaciente(paciente);
-                }
-            }
-
-            // Verificar se deve ser associado a um psicólogo
-            if (usuarioService.PegarUsuarioLogado() != null) {
-                Psicologo psicologo = psicologoRepository
-                        .findByUsuarioId(usuarioService.PegarUsuarioLogado().getBody().getId())
-                        .orElseThrow(() -> new RuntimeException("Psicólogo não encontrado"));
-                telefone.setPsicologo(psicologo);
-
-                // Se for definido como principal, desativar outros telefones principais
-                if (dto.principal()) {
-                    atualizarTelefonePrincipalPsicologo(psicologo);
-                }
+            // Se for definido como principal, desativar outros telefones principais do mesmo proprietário
+            if (dto.principal()) {
+                atualizarTelefonePrincipal(dto.proprietarioId(), dto.tipoProprietario());
             }
 
             // Salvar o telefone
@@ -100,17 +76,16 @@ public class TelefoneService {
             telefone.setWhatsapp(dto.whatsapp());
             telefone.setObservacao(dto.observacao());
 
+            // Não permitimos alterar o proprietário do telefone
+            // Se quiser mudar o proprietário, deve-se excluir e criar um novo
+
             // Atualizar o status de principal apenas se tiver mudado
             if (dto.principal() != telefone.isPrincipal()) {
                 telefone.setPrincipal(dto.principal());
 
                 // Se for definido como principal, desativar outros telefones principais
                 if (dto.principal()) {
-                    if (telefone.getPaciente() != null) {
-                        atualizarTelefonePrincipalPaciente(telefone.getPaciente());
-                    } else if (telefone.getPsicologo() != null) {
-                        atualizarTelefonePrincipalPsicologo(telefone.getPsicologo());
-                    }
+                    atualizarTelefonePrincipal(telefone.getProprietarioId(), telefone.getTipoProprietario());
                 }
             }
 
@@ -159,14 +134,17 @@ public class TelefoneService {
     }
 
     /**
-     * Lista todos os telefones de um paciente
+     * Lista todos os telefones de um proprietário
      *
-     * @param pacienteId ID do paciente
+     * @param proprietarioId ID do proprietário
+     * @param tipoProprietario Tipo do proprietário
      * @return Lista de telefones
      */
-    public ResponseEntity<List<TelefoneDto>> listarTelefonesPorPaciente(UUID pacienteId) {
+    public ResponseEntity<List<TelefoneDto>> listarTelefonesPorProprietario(
+            UUID proprietarioId, TipoProprietario tipoProprietario) {
         try {
-            List<Telefone> telefones = telefoneRepository.findByPacienteId(pacienteId);
+            List<Telefone> telefones = telefoneRepository.findByProprietarioIdAndTipoProprietario(
+                    proprietarioId, tipoProprietario);
 
             List<TelefoneDto> telefonesDto = telefones.stream()
                     .map(this::converterParaDto)
@@ -179,74 +157,40 @@ public class TelefoneService {
     }
 
     /**
-     * Lista todos os telefones de um psicólogo
+     * Obtém o telefone WhatsApp principal de um proprietário
      *
-     * @return Lista de telefones
-     */
-    public ResponseEntity<List<TelefoneDto>> listarTelefonesPorPsicologo() {
-        try {
-            UUID usuarioId = usuarioService.PegarUsuarioLogado().getBody().getId();
-            List<Telefone> telefones = telefoneRepository.findByPsicologoId(usuarioId);
-
-            List<TelefoneDto> telefonesDto = telefones.stream()
-                    .map(this::converterParaDto)
-                    .collect(Collectors.toList());
-
-            return ResponseEntity.ok(telefonesDto);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
-    }
-
-    /**
-     * Obtém o telefone WhatsApp principal de um paciente
-     *
-     * @param pacienteId ID do paciente
+     * @param proprietarioId ID do proprietário
+     * @param tipoProprietario Tipo do proprietário
      * @return O número de telefone formatado para WhatsApp ou null
      */
-    public String obterTelefoneWhatsappPaciente(UUID pacienteId) {
-        List<Telefone> telefones = telefoneRepository.findWhatsappByPacienteId(pacienteId);
+    public String obterTelefoneWhatsapp(UUID proprietarioId, TipoProprietario tipoProprietario) {
+        List<Telefone> telefones = telefoneRepository.findByProprietarioIdAndTipoProprietarioAndWhatsapp(
+                proprietarioId, tipoProprietario, true);
+
         if (telefones.isEmpty()) {
             return null;
         }
-        return telefones.get(0).getNumeroFormatadoWhatsapp();
+
+        // Primeiramente, tentar encontrar um telefone que seja marcado como principal
+        Telefone telefonePrincipal = telefones.stream()
+                .filter(Telefone::isPrincipal)
+                .findFirst()
+                .orElse(telefones.get(0)); // Se não houver principal, pegar o primeiro
+
+        return telefonePrincipal.getNumeroFormatadoWhatsapp();
     }
 
     /**
-     * Obtém o telefone WhatsApp principal de um psicólogo
+     * Atualiza o status de principal dos telefones de um proprietário
      *
-     * @param psicologoId ID do psicólogo
-     * @return O número de telefone formatado para WhatsApp ou null
+     * @param proprietarioId ID do proprietário
+     * @param tipoProprietario Tipo do proprietário
      */
-    public String obterTelefoneWhatsappPsicologo(UUID psicologoId) {
-        List<Telefone> telefones = telefoneRepository.findWhatsappByPsicologoId(psicologoId);
-        if (telefones.isEmpty()) {
-            return null;
-        }
-        return telefones.get(0).getNumeroFormatadoWhatsapp();
-    }
+    private void atualizarTelefonePrincipal(UUID proprietarioId, TipoProprietario tipoProprietario) {
+        List<Telefone> telefones = telefoneRepository.findByProprietarioIdAndTipoProprietario(
+                proprietarioId, tipoProprietario);
 
-    /**
-     * Atualiza o status de principal dos telefones de um paciente
-     *
-     * @param paciente O paciente
-     */
-    private void atualizarTelefonePrincipalPaciente(Paciente paciente) {
-        List<Telefone> telefonesPaciente = telefoneRepository.findByPaciente(paciente);
-        telefonesPaciente.forEach(tel -> {
-            tel.setPrincipal(false);
-            telefoneRepository.save(tel);
-        });
-    }
-
-    /**
-     * Atualiza o status de principal dos telefones de um psicólogo
-     *
-     * @param psicologo O psicólogo
-     */
-    private void atualizarTelefonePrincipalPsicologo(Psicologo psicologo) {
-        List<Telefone> telefonesPsicologo = telefoneRepository.findByPsicologo(psicologo);
-        telefonesPsicologo.forEach(tel -> {
+        telefones.forEach(tel -> {
             tel.setPrincipal(false);
             telefoneRepository.save(tel);
         });
@@ -267,7 +211,11 @@ public class TelefoneService {
                 telefone.getTipo(),
                 telefone.isPrincipal(),
                 telefone.isWhatsapp(),
-                telefone.getObservacao()
+                telefone.getObservacao(),
+                telefone.getProprietarioId(),
+                telefone.getTipoProprietario(),
+                telefone.getNumeroFormatado(),
+                telefone.getNumeroFormatadoWhatsapp()
         );
     }
 }
