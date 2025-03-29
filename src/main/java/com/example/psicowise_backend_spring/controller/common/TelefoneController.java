@@ -2,6 +2,7 @@ package com.example.psicowise_backend_spring.controller.common;
 
 import com.example.psicowise_backend_spring.dto.common.CriarTelefoneDto;
 import com.example.psicowise_backend_spring.dto.common.TelefoneDto;
+import com.example.psicowise_backend_spring.enums.common.TipoProprietario;
 import com.example.psicowise_backend_spring.service.common.TelefoneService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -57,16 +58,34 @@ public class TelefoneController {
         return telefoneService.buscarTelefonePorId(id);
     }
 
+    /**
+     * Lista todos os telefones de um proprietário
+     *
+     * @param proprietarioId ID do proprietário
+     * @param tipoProprietario Tipo do proprietário
+     * @return Lista de telefones
+     */
+    @GetMapping("/proprietario/{proprietarioId}")
+    @PreAuthorize("hasRole('PSICOLOGO')")
+    public ResponseEntity<List<TelefoneDto>> listarTelefonesPorProprietario(
+            @PathVariable UUID proprietarioId,
+            @RequestParam TipoProprietario tipoProprietario) {
+        return telefoneService.listarTelefonesPorProprietario(proprietarioId, tipoProprietario);
+    }
 
     /**
-     * Busca um telefone pelo ID do paciente
+     * Obtém o telefone WhatsApp de um proprietário
      *
-     * @param pacienteId ID do paciente
-     * @return O telefone encontrado
+     * @param proprietarioId ID do proprietário
+     * @param tipoProprietario Tipo do proprietário
+     * @return O telefone WhatsApp formatado ou null
      */
-    @GetMapping("/paciente/whatsapp/{pacienteId}")
-    public ResponseEntity<String> buscarWhatsappDoPaciente(@PathVariable UUID pacienteId) {
-        String telefone = telefoneService.obterTelefoneWhatsappPaciente(pacienteId);
+    @GetMapping("/whatsapp/{proprietarioId}")
+    @PreAuthorize("hasRole('PSICOLOGO')")
+    public ResponseEntity<String> buscarWhatsappDoProprietario(
+            @PathVariable UUID proprietarioId,
+            @RequestParam TipoProprietario tipoProprietario) {
+        String telefone = telefoneService.obterTelefoneWhatsapp(proprietarioId, tipoProprietario);
         return ResponseEntity.ok(telefone);
     }
 
@@ -83,7 +102,7 @@ public class TelefoneController {
     }
 
     /**
-     * Lista todos os telefones de um paciente
+     * API de compatibilidade para buscar telefones de pacientes (para manter compatibilidade com código existente)
      *
      * @param pacienteId ID do paciente
      * @return Lista de telefones
@@ -91,17 +110,18 @@ public class TelefoneController {
     @GetMapping("/paciente/{pacienteId}")
     @PreAuthorize("hasRole('PSICOLOGO')")
     public ResponseEntity<List<TelefoneDto>> listarTelefonesPorPaciente(@PathVariable UUID pacienteId) {
-        return telefoneService.listarTelefonesPorPaciente(pacienteId);
+        return telefoneService.listarTelefonesPorProprietario(pacienteId, TipoProprietario.PACIENTE);
     }
 
     /**
-     * Lista todos os telefones de um psicólogo
+     * API de compatibilidade para buscar telefones de psicólogos (para manter compatibilidade com código existente)
      *
+     * @param psicologoId ID do psicólogo
      * @return Lista de telefones
      */
-    @GetMapping("/psicologo/")
+    @GetMapping("/psicologo/{psicologoId}")
     @PreAuthorize("hasAnyRole('PSICOLOGO', 'ADMIN')")
-    public ResponseEntity<List<TelefoneDto>> listarTelefonesPorPsicologo() {
-        return telefoneService.listarTelefonesPorPsicologo();
+    public ResponseEntity<List<TelefoneDto>> listarTelefonesPorPsicologo(@PathVariable UUID psicologoId) {
+        return telefoneService.listarTelefonesPorProprietario(psicologoId, TipoProprietario.PSICOLOGO);
     }
 }

@@ -13,6 +13,7 @@ import com.example.psicowise_backend_spring.repository.autenticacao.UsuarioRepos
 import com.example.psicowise_backend_spring.repository.consulta.EspecialidadeRepository;
 import com.example.psicowise_backend_spring.repository.consulta.PsicologoRepository;
 import com.example.psicowise_backend_spring.service.autenticacao.UsuarioService;
+import com.example.psicowise_backend_spring.service.common.TelefoneLoaderService;
 import com.example.psicowise_backend_spring.util.HashUtil;
 import jakarta.transaction.Transactional;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -34,7 +36,7 @@ public class PsicologoService {
     private final HashUtil hashUtil;
     private final UsuarioService usuarioService;
     private final EspecialidadeRepository especialidadeRepository;
-
+    private final TelefoneLoaderService telefoneLoaderService;
 
     PsicologoService(
             PsicologoRepository psicologoRepository,
@@ -42,13 +44,15 @@ public class PsicologoService {
             RoleRepository roleRepository,
             HashUtil hashUtil,
             UsuarioService usuarioService,
-            EspecialidadeRepository especialidadeRepository) {
+            EspecialidadeRepository especialidadeRepository,
+            TelefoneLoaderService telefoneLoaderService) {
         this.psicologoRepository = psicologoRepository;
         this.usuarioRepository = usuarioRepository;
         this.roleRepository = roleRepository;
         this.hashUtil = hashUtil;
         this.usuarioService = usuarioService;
         this.especialidadeRepository = especialidadeRepository;
+        this.telefoneLoaderService = telefoneLoaderService;
     }
 
     @Transactional
@@ -87,5 +91,64 @@ public class PsicologoService {
         Psicologo saved = psicologoRepository.save(psicologo);
 
         return ResponseEntity.ok(saved);
+    }
+
+    /**
+     * Busca um psicólogo pelo ID
+     *
+     * @param id ID do psicólogo
+     * @return Optional contendo o psicólogo ou vazio se não encontrado
+     */
+    public Optional<Psicologo> buscarPorId(UUID id) {
+        Optional<Psicologo> psicologoOpt = psicologoRepository.findById(id);
+        psicologoOpt.ifPresent(telefoneLoaderService::carregarTelefonesPsicologo);
+        return psicologoOpt;
+    }
+
+    /**
+     * Busca um psicólogo pelo ID do usuário
+     *
+     * @param usuarioId ID do usuário
+     * @return Optional contendo o psicólogo ou vazio se não encontrado
+     */
+    public Optional<Psicologo> buscarPorUsuarioId(UUID usuarioId) {
+        Optional<Psicologo> psicologoOpt = psicologoRepository.findByUsuarioId(usuarioId);
+        psicologoOpt.ifPresent(telefoneLoaderService::carregarTelefonesPsicologo);
+        return psicologoOpt;
+    }
+
+    /**
+     * Lista todos os psicólogos
+     *
+     * @return Lista de psicólogos
+     */
+    public List<Psicologo> listarTodos() {
+        List<Psicologo> psicologos = psicologoRepository.findAll();
+        telefoneLoaderService.carregarTelefonesPsicologos(psicologos);
+        return psicologos;
+    }
+
+    /**
+     * Obtém o psicólogo autenticado
+     *
+     * @return O psicólogo autenticado ou null
+     */
+    public Psicologo getPsicologoAutenticado() {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String idString = auth.getName();
+            UUID usuarioId = UUID.fromString(idString);
+
+            Optional<Psicologo> psicologoOpt = psicologoRepository.findByUsuarioId(usuarioId);
+            if (psicologoOpt.isPresent()) {
+                Psicologo psicologo = psicologoOpt.get();
+                telefoneLoaderService.carregarTelefonesPsicologo(psicologo);
+                return psicologo;
+            }
+
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

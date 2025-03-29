@@ -1,7 +1,6 @@
 package com.example.psicowise_backend_spring.entity.common;
 
-import com.example.psicowise_backend_spring.entity.consulta.Paciente;
-import com.example.psicowise_backend_spring.entity.consulta.Psicologo;
+import com.example.psicowise_backend_spring.enums.common.TipoProprietario;
 import com.example.psicowise_backend_spring.enums.common.TipoTelefone;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -44,13 +43,14 @@ public class Telefone {
     @Column(name = "observacao")
     private String observacao;
 
-    @ManyToOne
-    @JoinColumn(name = "paciente_id")
-    private Paciente paciente;
+    // Novo campo para armazenar o ID do proprietário (seja paciente, psicólogo ou outro)
+    @Column(name = "proprietario_id", nullable = false)
+    private UUID proprietarioId;
 
-    @ManyToOne
-    @JoinColumn(name = "psicologo_id")
-    private Psicologo psicologo;
+    // Novo campo para indicar o tipo do proprietário
+    @Column(name = "tipo_proprietario", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private TipoProprietario tipoProprietario;
 
     @CreatedDate
     @Temporal(TemporalType.TIMESTAMP)
@@ -69,5 +69,14 @@ public class Telefone {
     @Transient
     public String getNumeroFormatadoWhatsapp() {
         return codigoPais + ddd + numero.replaceAll("[^0-9]", "");
+    }
+
+    /**
+     * Retorna o número formatado de maneira legível
+     * Formato: (DDD) NUMERO
+     */
+    @Transient
+    public String getNumeroFormatado() {
+        return "(" + ddd + ") " + numero;
     }
 }

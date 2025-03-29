@@ -3,10 +3,12 @@ package com.example.psicowise_backend_spring.util;
 import com.example.psicowise_backend_spring.entity.common.Telefone;
 import com.example.psicowise_backend_spring.entity.consulta.Paciente;
 import com.example.psicowise_backend_spring.entity.consulta.Psicologo;
+import com.example.psicowise_backend_spring.enums.common.TipoProprietario;
 import com.example.psicowise_backend_spring.enums.common.TipoTelefone;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Classe utilitária para manipulação de telefones
@@ -112,10 +114,13 @@ public class TelefoneUtil {
      * @param tipo Tipo do telefone
      * @param principal Se é o telefone principal
      * @param whatsapp Se é um número WhatsApp
+     * @param proprietarioId ID do proprietário do telefone
+     * @param tipoProprietario Tipo do proprietário
      * @return O telefone criado
      */
     public static Telefone criarTelefone(String numero, String ddd, String codigoPais,
-                                         TipoTelefone tipo, boolean principal, boolean whatsapp) {
+                                         TipoTelefone tipo, boolean principal, boolean whatsapp,
+                                         UUID proprietarioId, TipoProprietario tipoProprietario) {
         Telefone telefone = new Telefone();
         telefone.setNumero(numero);
         telefone.setDdd(ddd);
@@ -123,11 +128,38 @@ public class TelefoneUtil {
         telefone.setTipo(tipo);
         telefone.setPrincipal(principal);
         telefone.setWhatsapp(whatsapp);
+        telefone.setProprietarioId(proprietarioId);
+        telefone.setTipoProprietario(tipoProprietario);
         return telefone;
     }
 
     /**
-     * Adiciona um telefone ao paciente
+     * Adiciona um telefone à lista de telefones
+     *
+     * @param telefones Lista de telefones
+     * @param telefone Telefone a ser adicionado
+     */
+    public static void adicionarTelefone(List<Telefone> telefones, Telefone telefone) {
+        if (telefones == null || telefone == null) {
+            return;
+        }
+
+        // Se for principal, desmarca os outros
+        if (telefone.isPrincipal()) {
+            telefones.forEach(t -> {
+                if (t.getProprietarioId().equals(telefone.getProprietarioId()) &&
+                        t.getTipoProprietario() == telefone.getTipoProprietario()) {
+                    t.setPrincipal(false);
+                }
+            });
+        }
+
+        // Adiciona à lista de telefones
+        telefones.add(telefone);
+    }
+
+    /**
+     * Adiciona um telefone ao paciente (método de compatibilidade)
      *
      * @param paciente Paciente
      * @param telefone Telefone a ser adicionado
@@ -137,9 +169,9 @@ public class TelefoneUtil {
             return;
         }
 
-        // Define a referência ao paciente
-        telefone.setPaciente(paciente);
-        telefone.setPsicologo(null); // Garante que não está associado a um psicólogo
+        // Configurar o telefone para o paciente
+        telefone.setProprietarioId(paciente.getId());
+        telefone.setTipoProprietario(TipoProprietario.PACIENTE);
 
         // Se for principal, desmarca os outros
         if (telefone.isPrincipal()) {
@@ -151,7 +183,7 @@ public class TelefoneUtil {
     }
 
     /**
-     * Adiciona um telefone ao psicólogo
+     * Adiciona um telefone ao psicólogo (método de compatibilidade)
      *
      * @param psicologo Psicólogo
      * @param telefone Telefone a ser adicionado
@@ -161,9 +193,9 @@ public class TelefoneUtil {
             return;
         }
 
-        // Define a referência ao psicólogo
-        telefone.setPsicologo(psicologo);
-        telefone.setPaciente(null); // Garante que não está associado a um paciente
+        // Configurar o telefone para o psicólogo
+        telefone.setProprietarioId(psicologo.getId());
+        telefone.setTipoProprietario(TipoProprietario.PSICOLOGO);
 
         // Se for principal, desmarca os outros
         if (telefone.isPrincipal()) {
@@ -175,7 +207,33 @@ public class TelefoneUtil {
     }
 
     /**
-     * Remove um telefone do paciente
+     * Remove um telefone da lista pelo ID
+     *
+     * @param telefones Lista de telefones
+     * @param telefoneId ID do telefone a ser removido
+     * @return true se o telefone foi removido, false caso contrário
+     */
+    public static boolean removerTelefone(List<Telefone> telefones, UUID telefoneId) {
+        if (telefones == null || telefoneId == null) {
+            return false;
+        }
+
+        // Busca o telefone pelo ID
+        Telefone telefone = telefones.stream()
+                .filter(t -> t.getId().equals(telefoneId))
+                .findFirst()
+                .orElse(null);
+
+        if (telefone != null) {
+            telefones.remove(telefone);
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Remove um telefone do paciente (método de compatibilidade)
      *
      * @param paciente Paciente
      * @param telefoneId ID do telefone a ser removido
@@ -186,23 +244,11 @@ public class TelefoneUtil {
             return false;
         }
 
-        // Busca o telefone pelo ID
-        Telefone telefone = paciente.getTelefones().stream()
-                .filter(t -> t.getId().equals(telefoneId))
-                .findFirst()
-                .orElse(null);
-
-        if (telefone != null) {
-            paciente.getTelefones().remove(telefone);
-            telefone.setPaciente(null);
-            return true;
-        }
-
-        return false;
+        return removerTelefone(paciente.getTelefones(), telefoneId);
     }
 
     /**
-     * Remove um telefone do psicólogo
+     * Remove um telefone do psicólogo (método de compatibilidade)
      *
      * @param psicologo Psicólogo
      * @param telefoneId ID do telefone a ser removido
@@ -213,18 +259,26 @@ public class TelefoneUtil {
             return false;
         }
 
-        // Busca o telefone pelo ID
-        Telefone telefone = psicologo.getTelefones().stream()
-                .filter(t -> t.getId().equals(telefoneId))
-                .findFirst()
-                .orElse(null);
+        return removerTelefone(psicologo.getTelefones(), telefoneId);
+    }
 
-        if (telefone != null) {
-            psicologo.getTelefones().remove(telefone);
-            telefone.setPsicologo(null);
-            return true;
+    /**
+     * Filtra telefones por proprietário
+     *
+     * @param telefones Lista de telefones
+     * @param proprietarioId ID do proprietário
+     * @param tipoProprietario Tipo do proprietário
+     * @return Lista de telefones do proprietário
+     */
+    public static List<Telefone> filtrarTelefonesPorProprietario(
+            List<Telefone> telefones, UUID proprietarioId, TipoProprietario tipoProprietario) {
+        if (telefones == null || proprietarioId == null) {
+            return List.of();
         }
 
-        return false;
+        return telefones.stream()
+                .filter(t -> t.getProprietarioId().equals(proprietarioId) &&
+                        t.getTipoProprietario() == tipoProprietario)
+                .collect(Collectors.toList());
     }
 }

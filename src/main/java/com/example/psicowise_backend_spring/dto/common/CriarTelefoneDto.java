@@ -1,5 +1,6 @@
 package com.example.psicowise_backend_spring.dto.common;
 
+import com.example.psicowise_backend_spring.enums.common.TipoProprietario;
 import com.example.psicowise_backend_spring.enums.common.TipoTelefone;
 
 import java.util.UUID;
@@ -12,5 +13,6 @@ public record CriarTelefoneDto(
         boolean principal,
         boolean whatsapp,
         String observacao,
-        UUID pacienteId
+        UUID proprietarioId,
+        TipoProprietario tipoProprietario
 ) {}
