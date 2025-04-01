@@ -10,7 +10,7 @@ import java.util.Map;
 
 @RestController
 public class HealthController {
-    @GetMapping("/health")
+    @GetMapping("/ping")
     public ResponseEntity<Map<String, String>> health() {
         Map<String, String> status = new HashMap<>();
         status.put("status", "UP");
