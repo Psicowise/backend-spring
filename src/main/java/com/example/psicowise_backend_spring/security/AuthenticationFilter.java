@@ -24,8 +24,6 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @Component
-@EnableWebSecurity
-@EnableMethodSecurity
 @Slf4j
 public class AuthenticationFilter implements Filter {
 
@@ -46,6 +44,7 @@ public class AuthenticationFilter implements Filter {
         log.debug("Processing request: {} - Exempt: {}", requestURI, isExemptUrl);
 
         final String authorizationHeader = httpRequest.getHeader(AUTHORIZATION_HEADER);
+        log.info("Auth header: {}", authorizationHeader != null ? "Present" : "Absent");
 
         // Se a URL está isenta ou não há header de autorização, apenas passe adiante
         if (isExemptUrl || authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {

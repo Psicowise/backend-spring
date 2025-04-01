@@ -190,6 +190,9 @@ public class UsuarioService {
 
         // Obter o ID do usuário autenticado em formato de string
         String idString = auth.getName();
+        System.out.println("Auth: " + auth);
+        System.out.println("Auth name: " + auth.getName());
+        System.out.println("Auth authorities: " + auth.getAuthorities());
 
         // Converter a string para UUID
         UUID usuarioId;
