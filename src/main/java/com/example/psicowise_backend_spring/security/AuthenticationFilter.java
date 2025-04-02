@@ -100,8 +100,7 @@ public class AuthenticationFilter implements Filter {
      * Verifica se a URL está isenta de autenticação
      */
     private boolean isExemptUrl(String requestURI) {
-        return requestURI.startsWith("/api/usuarios/") ||
-                requestURI.startsWith("/api/roles/") ||
+        return requestURI.startsWith("/api/roles/") ||
                 requestURI.startsWith("/api/autenticacao/") ||
                 requestURI.equals("/ping") ||
                 requestURI.equals("/actuator/health");
