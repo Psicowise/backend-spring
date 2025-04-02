@@ -29,12 +29,16 @@ public class ZapiWhatsappService implements WhatsappService {
     @Value("${zapi.token}")
     private String apiToken;
 
+    @Value("${zapi.client-token}")
+    private String clientToken;
+
     private static final String Z_API_BASE_URL = "https://api.z-api.io/instances/";
 
     @Override
     public boolean enviarMensagemSimples(String phoneNumber, String message) {
         try {
             String url = Z_API_BASE_URL + instanceId + "/token/" + apiToken + "/send-text";
+            log.info("Enviando mensagem para {}, usando instância: {}", phoneNumber, instanceId);
 
             Map<String, Object> requestBody = new HashMap<>();
             requestBody.put("phone", phoneNumber);
@@ -42,6 +46,9 @@ public class ZapiWhatsappService implements WhatsappService {
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
+
+            // Adicione o client-token exatamente como mostrado no exemplo
+            headers.add("Client-Token", clientToken);
 
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
             ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.POST, entity, Map.class);
@@ -72,6 +79,9 @@ public class ZapiWhatsappService implements WhatsappService {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
 
+            // Adicionar o Client-Token ao cabeçalho
+            headers.add("Client-Token", clientToken);
+
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
             ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.POST, entity, Map.class);
 
@@ -101,6 +111,9 @@ public class ZapiWhatsappService implements WhatsappService {
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
+
+            // Adicionar o Client-Token ao cabeçalho
+            headers.add("Client-Token", clientToken);
 
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
             ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.POST, entity, Map.class);
