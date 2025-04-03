@@ -29,6 +29,11 @@ public class UsuarioController {
         return usuarioService.CriarUsuarioPsicologo(usuarioDto);
     }
 
+    @GetMapping( "/buscar/atual")
+    public ResponseEntity<UsuarioLogadoDto> buscarUsuarioLogado() {
+        return usuarioService.PegarUsuarioLogado();
+    }
+
     // Endpoint para listar todos os usuários
     @GetMapping
     public ResponseEntity<List<Usuario>> listarUsuarios() {
@@ -36,7 +41,7 @@ public class UsuarioController {
     }
 
     // Endpoint para buscar um usuário pelo email
-    @GetMapping("/email")
+    @GetMapping("/buscar/email")
     public ResponseEntity<Usuario> buscarUsuarioPorEmail(@RequestParam String email) {
         return usuarioService.BuscarUsuarioPorEmail(email);
     }
@@ -51,10 +56,5 @@ public class UsuarioController {
     @PutMapping
     public ResponseEntity<Usuario> atualizarUsuario(@RequestBody Usuario usuario) {
         return usuarioService.AtualizarUsuario(usuario);
-    }
-
-    @GetMapping("/buscar_usuario_logado")
-    public ResponseEntity<UsuarioLogadoDto> buscarUsuarioLogado() {
-        return usuarioService.PegarUsuarioLogado();
     }
 }

@@ -21,7 +21,6 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 @Configuration
 public class SecurityConfig {
-
     private final AuthenticationFilter authenticationFilter;
 
     @Bean
@@ -30,7 +29,6 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(Arrays.asList("*"));  // Consider specifying domains in production
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type"));
-
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
@@ -42,15 +40,13 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 // Disable CSRF protection for stateless APIs
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/health", "/actuator/health").permitAll()
-                        .requestMatchers("/api/usuarios/**").permitAll()  // Allow login without authentication
+                        .requestMatchers("/health", "/actuator/health", "/ping").permitAll()
                         .requestMatchers("/api/roles/**").permitAll()
                         .requestMatchers("/api/autenticacao/**").permitAll()
                         .anyRequest().authenticated()  // Secure all other endpoints
                 )
                 .csrf(AbstractHttpConfigurer::disable)
                 .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
-
         return http.build();
     }
 }

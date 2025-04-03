@@ -4,13 +4,12 @@ import com.example.psicowise_backend_spring.dto.autenticacao.*;
 import com.example.psicowise_backend_spring.exception.autenticacao.TokenInvalidoException;
 import com.example.psicowise_backend_spring.service.autenticacao.AutenticacaoService;
 import com.example.psicowise_backend_spring.service.autenticacao.RecuperacaoSenhaService;
+import com.example.psicowise_backend_spring.service.autenticacao.UsuarioService;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -19,6 +18,7 @@ public class AutenticacaoController {
 
     private final AutenticacaoService autenticacaoService;
     private final RecuperacaoSenhaService recuperacaoSenhaService;
+    private final UsuarioService usuarioService;
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDto> login(@RequestBody LoginRequestDto request) {
