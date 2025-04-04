@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -42,7 +43,8 @@ public class UsuarioController {
 
     // Endpoint para buscar um usuário pelo email
     @GetMapping("/buscar/email")
-    public ResponseEntity<Usuario> buscarUsuarioPorEmail(@RequestParam String email) {
+    public ResponseEntity<Usuario> buscarUsuarioPorEmail(@RequestBody Map<String, String> payload) {
+        String email = payload.get("email");
         return usuarioService.BuscarUsuarioPorEmail(email);
     }
 

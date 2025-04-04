@@ -136,7 +136,13 @@ public class UsuarioService {
 
     public ResponseEntity<Usuario> BuscarUsuarioPorEmail (String email){
         try {
-            return ResponseEntity.ok(usuarioRepository.findByEmail(email).get());
+            Optional<Usuario> usuario = usuarioRepository.findByEmail(email);
+            if (usuario.isPresent()) {
+                return ResponseEntity.ok(usuario.get());
+            } else {
+                // Retorna 404 quando o usuário não é encontrado
+                return ResponseEntity.notFound().build();
+            }
         } catch (Exception e) {
             // Log do erro
             System.err.println("Erro ao buscar usuário: " + e.getMessage());
