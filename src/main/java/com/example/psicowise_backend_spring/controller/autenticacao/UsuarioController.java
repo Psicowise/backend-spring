@@ -42,8 +42,8 @@ public class UsuarioController {
     }
 
     // Endpoint para buscar um usuário pelo email
-    @GetMapping("/buscar/email/{email}")
-    public ResponseEntity<Usuario> buscarUsuarioPorEmail(@PathVariable String email) {
+    @GetMapping("/email")
+    public ResponseEntity<Usuario> buscarUsuarioPorEmail(@RequestParam String email) {
         return usuarioService.BuscarUsuarioPorEmail(email);
     }
 
