@@ -42,7 +42,7 @@ public class UsuarioController {
     }
 
     // Endpoint para buscar um usuário pelo email
-    @GetMapping("/buscar/{email:.+}")
+    @GetMapping("/buscar/{email}")
     public ResponseEntity<Usuario> buscarUsuarioPorEmail(@PathVariable String email) {
         return usuarioService.BuscarUsuarioPorEmail(email);
     }
