@@ -107,6 +107,13 @@ public class AuthenticationFilter implements Filter {
     }
 
     /**
+     * Verifica se a URL é uma API e não um recurso estático
+     */
+    private boolean isApiUrl(String requestURI) {
+        return requestURI.startsWith("/api/");
+    }
+
+    /**
      * Envia uma resposta de erro
      */
     private void sendErrorResponse(HttpServletResponse response, int status, String message) throws IOException {

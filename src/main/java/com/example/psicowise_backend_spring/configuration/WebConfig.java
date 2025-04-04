@@ -14,6 +14,10 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // Configure to explicitly avoid treating API paths as static resources
+        registry.addResourceHandler("/static/**")
+                .addResourceLocations("classpath:/static/");
+
         // Desabilitar o mapeamento de recursos estáticos para caminhos de API
         registry.setOrder(Integer.MAX_VALUE);  // Coloca o manipulador de recursos como última opção
     }
