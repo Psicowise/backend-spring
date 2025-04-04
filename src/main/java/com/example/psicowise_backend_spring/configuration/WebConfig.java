@@ -20,9 +20,9 @@ public class WebConfig implements WebMvcConfigurer {
                 .addResourceLocations("classpath:/static/");
 
         // Explicitamente ignorar rotas de API
-        registry.addResourceHandler("/api/**")
-                .addResourceLocations("classpath:/non-existent/")
-                .setCachePeriod(0);
+        //registry.addResourceHandler("/api/**")
+        //        .addResourceLocations("classpath:/non-existent/")
+        //        .setCachePeriod(0);
 
         // Desabilitar o mapeamento de recursos estáticos para caminhos de API
         registry.setOrder(Integer.MAX_VALUE);  // Coloca o manipulador de recursos como última opção
