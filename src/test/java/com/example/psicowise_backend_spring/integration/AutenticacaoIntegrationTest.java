@@ -181,7 +181,8 @@ public class AutenticacaoIntegrationTest {
         // Buscar o usuário pelo email - usando a rota correta /buscar/email
         mockMvc.perform(get("/api/usuarios/buscar/email")
                         .header("Authorization", "Bearer " + authToken)
-                        .param("email", "maria.silva@example.com"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"maria.silva@example.com\"}"))  // Enviando como JSON no corpo
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.nome").value("Maria"))
                 .andExpect(jsonPath("$.email").value("maria.silva@example.com"));
