@@ -35,11 +35,7 @@ args = "chmod +x mvnw"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "./mvnw clean install"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "./mvnw spring-boot:run"
+args = "./mvnw clean spring-boot:run"
 
 [[ports]]
 localPort = 8080
