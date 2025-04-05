@@ -5,7 +5,7 @@ import com.example.psicowise_backend_spring.entity.consulta.Consulta;
 import com.example.psicowise_backend_spring.entity.consulta.SalaVideo;
 import com.example.psicowise_backend_spring.repository.consulta.ConsultaRepository;
 import com.example.psicowise_backend_spring.repository.consulta.SalaVideoRepository;
-import com.example.psicowise_backend_spring.service.lembrete.LembreteService;
+import com.example.psicowise_backend_spring.service.notificacao.LembreteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
