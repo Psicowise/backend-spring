@@ -3,52 +3,58 @@ package com.example.psicowise_backend_spring.security;
 import com.example.psicowise_backend_spring.enums.authenticacao.ERole;
 import com.example.psicowise_backend_spring.service.autenticacao.TokenBlackListService;
 import com.example.psicowise_backend_spring.util.JwtUtil;
-import jakarta.servlet.*;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 
+/**
+ * Filtro responsável pela autenticação baseada em JWT.
+ * Este filtro é executado uma vez por requisição e verifica se o token JWT é válido.
+ */
 @RequiredArgsConstructor
 @Component
 @Slf4j
-public class AuthenticationFilter implements Filter {
+public class AuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final TokenBlackListService tokenBlacklistService;
     private static final String AUTHORIZATION_HEADER = "Authorization";
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-            throws IOException, ServletException {
-        HttpServletRequest httpRequest = (HttpServletRequest) request;
-        HttpServletResponse httpResponse = (HttpServletResponse) response;
-
-        String requestURI = httpRequest.getRequestURI();
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
+        String requestURI = request.getRequestURI();
 
         // Verificar se é uma URL que está isenta de autenticação
-        boolean isExemptUrl = isExemptUrl(requestURI);
-        log.debug("Processing request: {} - Exempt: {}", requestURI, isExemptUrl);
+        if (isExemptUrl(requestURI)) {
+            log.debug("URL isenta de autenticação: {}", requestURI);
+            filterChain.doFilter(request, response);
+            return;
+        }
 
-        final String authorizationHeader = httpRequest.getHeader(AUTHORIZATION_HEADER);
-        log.info("Auth header: {}", authorizationHeader != null ? "Present" : "Absent");
+        final String authorizationHeader = request.getHeader(AUTHORIZATION_HEADER);
+        log.debug("Auth header: {}", authorizationHeader != null ? "Present" : "Absent");
 
-        // Se a URL está isenta ou não há header de autorização, apenas passe adiante
-        if (isExemptUrl || authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-            chain.doFilter(request, response);
+        // Se não há header de autorização, apenas passe adiante
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+            log.debug("Sem token de autenticação ou formato inválido");
+            filterChain.doFilter(request, response);
             return;
         }
 
@@ -57,7 +63,7 @@ public class AuthenticationFilter implements Filter {
             String token = authorizationHeader.substring(7);
 
             if (tokenBlacklistService.isTokenRevogado(token)) {
-                sendErrorResponse(httpResponse, HttpServletResponse.SC_UNAUTHORIZED, "Token revogado");
+                sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Token revogado");
                 return;
             }
 
@@ -67,9 +73,9 @@ public class AuthenticationFilter implements Filter {
                 if (jwtUtil.validateToken(token, userId)) {
                     // Load user details and authorities here
                     List<GrantedAuthority> authorities = List.of(
-                            new SimpleGrantedAuthority(ERole.ADMIN.name()),
-                            new SimpleGrantedAuthority(ERole.USER.name()),
-                            new SimpleGrantedAuthority(ERole.PSICOLOGO.name())
+                            new SimpleGrantedAuthority("ROLE_" + ERole.ADMIN.name()),
+                            new SimpleGrantedAuthority("ROLE_" + ERole.USER.name()),
+                            new SimpleGrantedAuthority("ROLE_" + ERole.PSICOLOGO.name())
                     );
 
                     Authentication authentication = new UsernamePasswordAuthenticationToken(
@@ -80,19 +86,18 @@ public class AuthenticationFilter implements Filter {
 
                     // Set the authentication in the SecurityContext
                     SecurityContextHolder.getContext().setAuthentication(authentication);
-
-                    // Continue com o processamento da requisição
-                    chain.doFilter(request, response);
+                    log.debug("Autenticação configurada para o usuário: {}", userId);
                 } else {
-                    sendErrorResponse(httpResponse, HttpServletResponse.SC_UNAUTHORIZED, "Token inválido");
+                    log.warn("Token inválido para o usuário: {}", userId);
+                    sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Token inválido");
+                    return;
                 }
-            } else {
-                // Token inválido ou autenticação já definida
-                chain.doFilter(request, response);
             }
+            // Continue with the filter chain
+            filterChain.doFilter(request, response);
         } catch (Exception ex) {
             log.error("Erro durante autenticação: {}", ex.getMessage(), ex);
-            sendErrorResponse(httpResponse, HttpServletResponse.SC_UNAUTHORIZED, "Erro de autenticação: " + ex.getMessage());
+            sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Erro de autenticação: " + ex.getMessage());
         }
     }
 
@@ -100,17 +105,17 @@ public class AuthenticationFilter implements Filter {
      * Verifica se a URL está isenta de autenticação
      */
     private boolean isExemptUrl(String requestURI) {
-        return requestURI.startsWith("/api/roles/") ||
-                requestURI.startsWith("/api/autenticacao/") ||
-                requestURI.equals("/ping") ||
-                requestURI.equals("/actuator/health");
-    }
-
-    /**
-     * Verifica se a URL é uma API e não um recurso estático
-     */
-    private boolean isApiUrl(String requestURI) {
-        return requestURI.startsWith("/api/");
+        return requestURI.equals("/ping") ||
+                requestURI.equals("/actuator/health") ||
+                requestURI.equals("/health") ||
+                requestURI.startsWith("/api/autenticacao/login") ||
+                requestURI.startsWith("/api/autenticacao/esqueci") ||
+                requestURI.startsWith("/api/autenticacao/redefinir") ||
+                requestURI.startsWith("/api/autenticacao/validar-token") ||
+                requestURI.startsWith("/api/roles") ||
+                requestURI.startsWith("/api/usuarios/criar") ||
+                requestURI.startsWith("/static/") ||
+                requestURI.startsWith("/assets/");
     }
 
     /**
@@ -125,12 +130,12 @@ public class AuthenticationFilter implements Filter {
     }
 
     @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
-        log.info("Inicializando AuthenticationFilter");
-    }
-
-    @Override
-    public void destroy() {
-        log.info("Destruindo AuthenticationFilter");
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        return path.startsWith("/static/") ||
+                path.startsWith("/assets/") ||
+                path.equals("/ping") ||
+                path.equals("/actuator/health") ||
+                path.equals("/health");
     }
 }
