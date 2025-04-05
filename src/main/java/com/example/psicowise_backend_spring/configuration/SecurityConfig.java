@@ -27,7 +27,8 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("*"));  // Consider specifying domains in production
+        // Em produção, considere especificar os domínios permitidos ao invés de "*"
+        configuration.setAllowedOrigins(Arrays.asList("*"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -36,23 +37,24 @@ public class SecurityConfig {
     }
 
     @Bean
-    @Order(1) // Prioridade alta para garantir que esta regra seja aplicada primeiro
+    @Order(1) // Prioridade alta para endpoints /api/**
     public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http) throws Exception {
         http
-                .securityMatcher("/api/**") // Esta cadeia de segurança só se aplica a URLs /api/**
+                .securityMatcher("/api/**") // Essa cadeia se aplica somente a URLs que iniciam com /api/
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/roles/**").permitAll()
                         .requestMatchers("/api/autenticacao/**").permitAll()
+                        .requestMatchers("/api/usuarios/criar/**").permitAll()
                         .requestMatchers("/api/**").authenticated()
-                );
-                //.addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                )
+                .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
     @Bean
-    @Order(2) // Menor prioridade
+    @Order(2) // Menor prioridade para os demais endpoints
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
