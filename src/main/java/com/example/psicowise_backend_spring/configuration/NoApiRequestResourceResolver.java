@@ -12,12 +12,11 @@ import java.util.List;
  * Isso evita que o Spring tente servir endpoints de API como recursos estáticos
  */
 public class NoApiRequestResourceResolver extends PathResourceResolver {
-
     @Override
     public Resource resolveResource(HttpServletRequest request, String requestPath,
                                     List<? extends Resource> locations, ResourceResolverChain chain) {
-        // Ignorar qualquer solicitação para caminhos da API
-        if (requestPath.startsWith("api/")) {
+        // Se o caminho começar com api/, não tente resolvê-lo como recurso estático
+        if (requestPath.startsWith("api/") || requestPath.startsWith("/api/")) {
             return null;
         }
         return super.resolveResource(request, requestPath, locations, chain);
