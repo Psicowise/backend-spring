@@ -10,6 +10,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebConfig implements WebMvcConfigurer {
     @Override
     public void configurePathMatch(PathMatchConfigurer configurer) {
+
         configurer.setUseTrailingSlashMatch(false);
     }
 
@@ -18,14 +19,6 @@ public class WebConfig implements WebMvcConfigurer {
         // Configure to explicitly avoid treating API paths as static resources
         registry.addResourceHandler("/static/**")
                 .addResourceLocations("classpath:/static/");
-
-        // Explicitamente ignorar rotas de API
-        //registry.addResourceHandler("/api/**")
-        //        .addResourceLocations("classpath:/non-existent/")
-        //        .setCachePeriod(0);
-
-        // Desabilitar o mapeamento de recursos estáticos para caminhos de API
-        //registry.setOrder(Integer.MAX_VALUE);  // Coloca o manipulador de recursos como última opção
     }
 
     @Override
