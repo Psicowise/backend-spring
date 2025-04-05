@@ -7,14 +7,15 @@ import org.springframework.web.servlet.config.annotation.*;
 public class WebConfig implements WebMvcConfigurer {
     @Override
     public void configurePathMatch(PathMatchConfigurer configurer) {
-        // Usar path pattern para fazer correspondência exata de endpoints
-        configurer.setUseTrailingSlashMatch(true);
-        configurer.setUseRegisteredSuffixPatternMatch(true);
+        // Não use trailing slash match para permitir correspondência mais precisa
+        configurer.setUseTrailingSlashMatch(false);
+
+        // Desabilitar esta configuração para evitar interferência
+        // configurer.setUseRegisteredSuffixPatternMatch(true);
     }
 
     @Override
     public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
-        // Configurar negociação de conteúdo para favorecer JSON por padrão
         configurer
                 .favorParameter(false)
                 .ignoreAcceptHeader(false)

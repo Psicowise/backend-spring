@@ -61,10 +61,12 @@ public class SecurityConfig {
                         .requestMatchers("/api/usuarios/criar/**").permitAll()
                         .requestMatchers("/api/roles/**").permitAll()
 
-                        // Endpoints que requerem autenticação
-                        .requestMatchers("/api/**").authenticated()
+                        // Garantir que esses endpoints específicos sejam reconhecidos
+                        .requestMatchers("/api/whatsapp/**").authenticated()
+                        .requestMatchers("/api/usuarios/buscar/atual").authenticated()
 
-                        // Por padrão, outros endpoints requerem autenticação
+                        // Outros endpoints de API
+                        .requestMatchers("/api/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
