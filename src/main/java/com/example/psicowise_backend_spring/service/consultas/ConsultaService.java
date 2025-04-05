@@ -31,7 +31,11 @@ public class ConsultaService {
     private void criarSalaVideo(Consulta consulta) {
         SalaVideo sala = new SalaVideo();
         sala.setConsulta(consulta);
-        sala.setLink("https://meet.jit.si/" + consulta.getId());
+        String salaId = "psicowise_" + consulta.getId().toString().substring(0, 8);
+        sala.setSalaId(salaId);
+        sala.setLinkAcesso("https://meet.jit.si/" + salaId);
+        sala.setLinkHost("https://meet.jit.si/" + salaId + "#config.startWithVideoMuted=false");
+        sala.setAtiva(false);
         salaVideoRepository.save(sala);
     }
 }
