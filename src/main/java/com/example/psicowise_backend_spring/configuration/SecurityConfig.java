@@ -41,6 +41,7 @@ public class SecurityConfig {
                 // Disable CSRF protection for stateless APIs
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/health", "/actuator/health", "/ping").permitAll()
+                        .requestMatchers("/api/**").authenticated()
                         .requestMatchers("/api/roles/**").permitAll()
                         .requestMatchers("/api/autenticacao/**").permitAll()
                         .anyRequest().authenticated()  // Secure all other endpoints
