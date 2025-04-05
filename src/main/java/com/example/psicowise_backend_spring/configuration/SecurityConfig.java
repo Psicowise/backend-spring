@@ -4,11 +4,12 @@ import com.example.psicowise_backend_spring.security.AuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -16,7 +17,12 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
+import java.util.List;
 
+/**
+ * Configuração de segurança da aplicação.
+ * Define regras de acesso, configuração de CORS e JWT.
+ */
 @EnableWebSecurity
 @EnableMethodSecurity
 @RequiredArgsConstructor
@@ -27,43 +33,42 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Em produção, considere especificar os domínios permitidos ao invés de "*"
-        configuration.setAllowedOrigins(Arrays.asList("*"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type"));
+        // Permitir todas as origens para desenvolvimento
+        configuration.setAllowedOrigins(List.of("*"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type", "Accept", "Origin"));
+        configuration.setExposedHeaders(List.of("Authorization"));
+        configuration.setAllowCredentials(false); // Importante quando allowedOrigins tem "*"
+        configuration.setMaxAge(3600L);
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
 
     @Bean
-    @Order(1) // Prioridade alta para endpoints /api/**
-    public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .securityMatcher("/api/**") // Essa cadeia se aplica somente a URLs que iniciam com /api/
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/roles/**").permitAll()
-                        .requestMatchers("/api/autenticacao/**").permitAll()
+                        // Endpoints públicos
+                        .requestMatchers("/ping", "/health", "/actuator/health").permitAll()
+                        .requestMatchers("/static/**", "/assets/**").permitAll()
+                        .requestMatchers("/api/autenticacao/login", "/api/autenticacao/esqueci",
+                                "/api/autenticacao/redefinir", "/api/autenticacao/validar-token").permitAll()
                         .requestMatchers("/api/usuarios/criar/**").permitAll()
+                        .requestMatchers("/api/roles/**").permitAll()
+
+                        // Endpoints que requerem autenticação
                         .requestMatchers("/api/**").authenticated()
+
+                        // Por padrão, outros endpoints requerem autenticação
+                        .anyRequest().authenticated()
                 )
                 .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
-        return http.build();
-    }
 
-    @Bean
-    @Order(2) // Menor prioridade para os demais endpoints
-    public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/health", "/actuator/health", "/ping").permitAll()
-                        .requestMatchers("/static/**", "/assets/**").permitAll()
-                        .anyRequest().authenticated()
-                );
         return http.build();
     }
 }
