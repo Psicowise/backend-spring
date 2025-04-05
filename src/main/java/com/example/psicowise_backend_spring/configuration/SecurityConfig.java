@@ -4,6 +4,7 @@ import com.example.psicowise_backend_spring.security.AuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -35,19 +36,32 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    @Order(1) // Prioridade alta para garantir que esta regra seja aplicada primeiro
+    public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http) throws Exception {
         http
+                .securityMatcher("/api/**") // Esta cadeia de segurança só se aplica a URLs /api/**
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                // Disable CSRF protection for stateless APIs
+                .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/health", "/actuator/health", "/ping").permitAll()
                         .requestMatchers("/api/roles/**").permitAll()
                         .requestMatchers("/api/autenticacao/**").permitAll()
                         .requestMatchers("/api/**").authenticated()
-                        .anyRequest().authenticated()  // Secure all other endpoints
                 )
-                .csrf(AbstractHttpConfigurer::disable)
                 .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        return http.build();
+    }
+
+    @Bean
+    @Order(2) // Menor prioridade
+    public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers("/health", "/actuator/health", "/ping").permitAll()
+                        .requestMatchers("/static/**", "/assets/**").permitAll()
+                        .anyRequest().authenticated()
+                );
         return http.build();
     }
 }

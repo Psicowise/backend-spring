@@ -12,7 +12,7 @@ import java.util.Map;
 public class RoleExceptionHandler {
 
     public ResponseEntity<Object> handleRoleJaExisteException(RoleJaExisteException ex) {
-        return criarRespostaDeErro(ex.getMessage(), HttpStatus.CONFLICT);
+        return criarRespostaDeErro(ex.getMessage(), HttpStatus.CONFLICT); // Explicitamente definido como 409
     }
 
     public ResponseEntity<Object> handleRoleNaoEncontradaException(RoleNaoEncontradaException ex) {
