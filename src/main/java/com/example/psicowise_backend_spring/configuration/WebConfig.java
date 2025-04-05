@@ -8,7 +8,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void configurePathMatch(PathMatchConfigurer configurer) {
         // Usar path pattern para fazer correspondência exata de endpoints
-        configurer.setUseTrailingSlashMatch(false);
+        configurer.setUseTrailingSlashMatch(true);
         configurer.setUseRegisteredSuffixPatternMatch(true);
     }
 
