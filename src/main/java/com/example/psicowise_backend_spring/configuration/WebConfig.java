@@ -25,7 +25,7 @@ public class WebConfig implements WebMvcConfigurer {
         //        .setCachePeriod(0);
 
         // Desabilitar o mapeamento de recursos estáticos para caminhos de API
-        registry.setOrder(Integer.MAX_VALUE);  // Coloca o manipulador de recursos como última opção
+        //registry.setOrder(Integer.MAX_VALUE);  // Coloca o manipulador de recursos como última opção
     }
 
     @Override
