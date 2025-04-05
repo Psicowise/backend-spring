@@ -19,6 +19,15 @@ public class WebConfig implements WebMvcConfigurer {
         // Configure to explicitly avoid treating API paths as static resources
         registry.addResourceHandler("/static/**")
                 .addResourceLocations("classpath:/static/");
+
+        // Importante: desabilitar o mapeamento padrão para evitar conflitos com endpoints API
+        registry.addResourceHandler("/**")
+                .addResourceLocations("classpath:/META-INF/resources/",
+                        "classpath:/resources/",
+                        "classpath:/static/",
+                        "classpath:/public/")
+                .resourceChain(true)
+                .addResolver(new NoApiRequestResourceResolver());
     }
 
     @Override
