@@ -1,5 +1,6 @@
 package com.example.psicowise_backend_spring.exception;
 
+import com.example.psicowise_backend_spring.enums.authenticacao.ERole;
 import com.example.psicowise_backend_spring.exception.role.RoleExceptionHandler;
 import com.example.psicowise_backend_spring.exception.role.RoleJaExisteException;
 import com.example.psicowise_backend_spring.exception.usuario.EmailJaCadastradoException;
@@ -56,6 +57,19 @@ public class GlobalExceptionHandler {
     // Exceção genérica
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleGenericException(Exception ex) {
+        // Check if this is a wrapped exception from our domain
+        if (ex.getCause() instanceof EmailJaCadastradoException) {
+            return usuarioExceptionHandler.handleEmailJaCadastradoException((EmailJaCadastradoException) ex.getCause());
+        } else if (ex.getCause() instanceof RoleJaExisteException) {
+            return roleExceptionHandler.handleRoleJaExisteException((RoleJaExisteException) ex.getCause());
+        } else if (ex.getMessage() != null && ex.getMessage().contains("Email já cadastrado")) {
+            return usuarioExceptionHandler.handleEmailJaCadastradoException(new EmailJaCadastradoException());
+        } else if (ex.getMessage() != null && ex.getMessage().contains("Role") && ex.getMessage().contains("já existe")) {
+            // Extract the role name from the error message
+            String roleName = ex.getMessage().split("'")[1]; // Extracts the role name from "Role 'USER' já existe"
+            return roleExceptionHandler.handleRoleJaExisteException(new RoleJaExisteException(ERole.valueOf(roleName)));
+        }
+
         return erroResponseUtil.criarRespostaDeErro("Erro interno do servidor: " + ex.getMessage(),
                 HttpStatus.INTERNAL_SERVER_ERROR);
     }

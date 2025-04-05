@@ -12,7 +12,7 @@ import java.util.Map;
 public class UsuarioExceptionHandler {
 
     public ResponseEntity<Object> handleEmailJaCadastradoException(EmailJaCadastradoException ex) {
-        return criarRespostaDeErro(ex.getMessage(), HttpStatus.CONFLICT);
+        return criarRespostaDeErro(ex.getMessage(), HttpStatus.CONFLICT); // Make sure it's CONFLICT (409)
     }
 
     public ResponseEntity<Object> handleRoleNaoEncontradaException(RoleNaoEncontradaException ex) {

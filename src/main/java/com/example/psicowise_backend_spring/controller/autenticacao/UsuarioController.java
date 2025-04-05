@@ -5,6 +5,7 @@ import com.example.psicowise_backend_spring.dto.autenticacao.UsuarioLogadoDto;
 import com.example.psicowise_backend_spring.entity.autenticacao.Usuario;
 import com.example.psicowise_backend_spring.service.autenticacao.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,6 +14,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @RestController
+@CrossOrigin(origins = "*")
 @RequestMapping("/api/usuarios")
 public class UsuarioController {
 
@@ -30,7 +32,7 @@ public class UsuarioController {
         return usuarioService.CriarUsuarioPsicologo(usuarioDto);
     }
 
-    @GetMapping( "/buscar/atual")
+    @GetMapping( path = "/buscar/atual", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UsuarioLogadoDto> buscarUsuarioLogado() {
         return usuarioService.PegarUsuarioLogado();
     }
