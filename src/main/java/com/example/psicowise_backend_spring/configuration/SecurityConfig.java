@@ -46,8 +46,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/roles/**").permitAll()
                         .requestMatchers("/api/autenticacao/**").permitAll()
                         .requestMatchers("/api/**").authenticated()
-                )
-                .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                );
+                //.addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
