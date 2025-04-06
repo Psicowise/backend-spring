@@ -36,7 +36,7 @@ public class WhatsappController {
      * @param mensagemDto DTO contendo o número de telefone e a mensagem
      * @return Resposta de sucesso ou erro
      */
-    @PostMapping("/enviar-mensagem-simples")
+    @PostMapping(value = "/enviar-mensagem-simples", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> enviarMensagemSimples(@RequestBody WhatsappMensagemDto mensagemDto) {
         boolean enviado = whatsappService.enviarMensagemSimples(
                 mensagemDto.phoneNumber(),
