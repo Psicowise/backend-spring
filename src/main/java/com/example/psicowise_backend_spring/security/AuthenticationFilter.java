@@ -5,8 +5,6 @@ import com.example.psicowise_backend_spring.service.autenticacao.TokenBlackListS
 import com.example.psicowise_backend_spring.util.JwtUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -23,10 +21,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 
-/**
- * Filtro responsável pela autenticação baseada em JWT.
- * Este filtro é executado uma vez por requisição e verifica se o token JWT é válido.
- */
 @RequiredArgsConstructor
 @Component
 @Slf4j
@@ -41,7 +35,7 @@ public class AuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         String requestURI = request.getRequestURI();
 
-        // Verificar se é uma URL que está isenta de autenticação
+        // Verificar se é uma URL isenta de autenticação
         if (isExemptUrl(requestURI)) {
             log.debug("URL isenta de autenticação: {}", requestURI);
             filterChain.doFilter(request, response);
@@ -51,14 +45,13 @@ public class AuthenticationFilter extends OncePerRequestFilter {
         final String authorizationHeader = request.getHeader(AUTHORIZATION_HEADER);
         log.debug("Auth header: {}", authorizationHeader != null ? "Present" : "Absent");
 
-        // Se não há header de autorização, apenas passe adiante
+        // Se não há header de autorização, continua na cadeia de filtros
         if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
             log.debug("Sem token de autenticação ou formato inválido");
             filterChain.doFilter(request, response);
             return;
         }
 
-        // Processar a autenticação
         try {
             String token = authorizationHeader.substring(7);
 
@@ -71,7 +64,6 @@ public class AuthenticationFilter extends OncePerRequestFilter {
 
             if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 if (jwtUtil.validateToken(token, userId)) {
-                    // Load user details and authorities here
                     List<GrantedAuthority> authorities = List.of(
                             new SimpleGrantedAuthority("ROLE_" + ERole.ADMIN.name()),
                             new SimpleGrantedAuthority("ROLE_" + ERole.USER.name()),
@@ -84,7 +76,6 @@ public class AuthenticationFilter extends OncePerRequestFilter {
                             authorities
                     );
 
-                    // Set the authentication in the SecurityContext
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                     log.debug("Autenticação configurada para o usuário: {}", userId);
                 } else {
@@ -93,7 +84,6 @@ public class AuthenticationFilter extends OncePerRequestFilter {
                     return;
                 }
             }
-            // Continue with the filter chain
             filterChain.doFilter(request, response);
         } catch (Exception ex) {
             log.error("Erro durante autenticação: {}", ex.getMessage(), ex);
@@ -102,7 +92,7 @@ public class AuthenticationFilter extends OncePerRequestFilter {
     }
 
     /**
-     * Verifica se a URL está isenta de autenticação
+     * Verifica se a URL está isenta de autenticação.
      */
     private boolean isExemptUrl(String requestURI) {
         return requestURI.equals("/ping") ||
@@ -119,7 +109,7 @@ public class AuthenticationFilter extends OncePerRequestFilter {
     }
 
     /**
-     * Envia uma resposta de erro
+     * Envia uma resposta de erro.
      */
     private void sendErrorResponse(HttpServletResponse response, int status, String message) throws IOException {
         response.setStatus(status);
