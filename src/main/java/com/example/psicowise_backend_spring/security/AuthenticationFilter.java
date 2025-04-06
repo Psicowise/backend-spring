@@ -114,7 +114,6 @@ public class AuthenticationFilter extends OncePerRequestFilter {
                 requestURI.startsWith("/api/autenticacao/validar-token") ||
                 requestURI.startsWith("/api/roles") ||
                 requestURI.startsWith("/api/usuarios/criar") ||
-                requestURI.startsWith("/api/usuarios/buscar/atual") ||
                 requestURI.startsWith("/static/") ||
                 requestURI.startsWith("/assets/");
     }
