@@ -3,9 +3,10 @@ package com.example.psicowise_backend_spring;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "com.example.psicowise_backend_spring")
 @EnableScheduling
 public class PsicowiseBackendSpringApplication {
 
