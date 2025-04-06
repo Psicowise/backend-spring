@@ -15,11 +15,20 @@ import java.util.UUID;
 
 @RestController
 @CrossOrigin(origins = "*")
+
 @RequestMapping("/api/usuarios")
 public class UsuarioController {
 
-    @Autowired
     private UsuarioService usuarioService;
+
+    public UsuarioController(UsuarioService usuarioService) {
+        this.usuarioService = usuarioService;
+    }
+
+    @GetMapping("/logado/perfil")
+    public ResponseEntity<UsuarioLogadoDto> buscarUsuarioLogado() {
+        return usuarioService.PegarUsuarioLogado();
+    }
 
     // Endpoint para criar um novo usuário
     @PostMapping("/criar/comum")
@@ -30,11 +39,6 @@ public class UsuarioController {
     @PostMapping("/criar/psicologo")
     public ResponseEntity<Usuario> criarUsuarioPsicologo(@RequestBody CriarUsuarioDto usuarioDto) {
         return usuarioService.CriarUsuarioPsicologo(usuarioDto);
-    }
-
-    @GetMapping(  "/logado")
-    public ResponseEntity<UsuarioLogadoDto> buscarUsuarioLogado() {
-        return usuarioService.PegarUsuarioLogado();
     }
 
     // Endpoint para listar todos os usuários
