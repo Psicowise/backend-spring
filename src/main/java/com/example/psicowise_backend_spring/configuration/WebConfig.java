@@ -1,6 +1,7 @@
 package com.example.psicowise_backend_spring.configuration;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.Resource;
 import org.springframework.web.servlet.config.annotation.*;
 import org.springframework.web.servlet.resource.PathResourceResolver;
@@ -9,6 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @Configuration
+@Profile("!test")
 public class WebConfig implements WebMvcConfigurer {
     @Override
     public void configurePathMatch(PathMatchConfigurer configurer) {

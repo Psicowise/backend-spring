@@ -19,15 +19,12 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * Configuração de segurança da aplicação.
- * Define regras de acesso, configuração de CORS e JWT.
- */
 @EnableWebSecurity
 @EnableMethodSecurity
 @RequiredArgsConstructor
 @Configuration
 public class SecurityConfig {
+
     private final AuthenticationFilter authenticationFilter;
 
     @Bean
@@ -60,12 +57,9 @@ public class SecurityConfig {
                                 "/api/autenticacao/redefinir", "/api/autenticacao/validar-token").permitAll()
                         .requestMatchers("/api/usuarios/criar/**").permitAll()
                         .requestMatchers("/api/roles/**").permitAll()
-
-                        // Garantir que esses endpoints específicos sejam reconhecidos
+                        // Endpoints autenticados
                         .requestMatchers("/api/whatsapp/**").authenticated()
                         .requestMatchers("/api/usuarios/buscar/atual").authenticated()
-
-                        // Outros endpoints de API
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().authenticated()
                 )
