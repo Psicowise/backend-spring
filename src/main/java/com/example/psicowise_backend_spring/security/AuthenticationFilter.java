@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -21,9 +22,14 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 
+/**
+ * Filtro responsável pela autenticação baseada em JWT.
+ * Este filtro é executado uma vez por requisição e verifica se o token JWT é válido.
+ */
 @RequiredArgsConstructor
 @Component
 @Slf4j
+@Profile("!test")
 public class AuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
@@ -35,7 +41,7 @@ public class AuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         String requestURI = request.getRequestURI();
 
-        // Verificar se é uma URL isenta de autenticação
+        // Verificar se é uma URL que está isenta de autenticação
         if (isExemptUrl(requestURI)) {
             log.debug("URL isenta de autenticação: {}", requestURI);
             filterChain.doFilter(request, response);
@@ -45,13 +51,14 @@ public class AuthenticationFilter extends OncePerRequestFilter {
         final String authorizationHeader = request.getHeader(AUTHORIZATION_HEADER);
         log.debug("Auth header: {}", authorizationHeader != null ? "Present" : "Absent");
 
-        // Se não há header de autorização, continua na cadeia de filtros
+        // Se não há header de autorização, apenas passe adiante
         if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
             log.debug("Sem token de autenticação ou formato inválido");
             filterChain.doFilter(request, response);
             return;
         }
 
+        // Processar a autenticação
         try {
             String token = authorizationHeader.substring(7);
 
@@ -64,6 +71,7 @@ public class AuthenticationFilter extends OncePerRequestFilter {
 
             if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 if (jwtUtil.validateToken(token, userId)) {
+                    // Load user details and authorities here
                     List<GrantedAuthority> authorities = List.of(
                             new SimpleGrantedAuthority("ROLE_" + ERole.ADMIN.name()),
                             new SimpleGrantedAuthority("ROLE_" + ERole.USER.name()),
@@ -76,6 +84,7 @@ public class AuthenticationFilter extends OncePerRequestFilter {
                             authorities
                     );
 
+                    // Set the authentication in the SecurityContext
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                     log.debug("Autenticação configurada para o usuário: {}", userId);
                 } else {
@@ -84,6 +93,7 @@ public class AuthenticationFilter extends OncePerRequestFilter {
                     return;
                 }
             }
+            // Continue with the filter chain
             filterChain.doFilter(request, response);
         } catch (Exception ex) {
             log.error("Erro durante autenticação: {}", ex.getMessage(), ex);
@@ -92,7 +102,7 @@ public class AuthenticationFilter extends OncePerRequestFilter {
     }
 
     /**
-     * Verifica se a URL está isenta de autenticação.
+     * Verifica se a URL está isenta de autenticação
      */
     private boolean isExemptUrl(String requestURI) {
         return requestURI.equals("/ping") ||
@@ -103,13 +113,11 @@ public class AuthenticationFilter extends OncePerRequestFilter {
                 requestURI.startsWith("/api/autenticacao/redefinir") ||
                 requestURI.startsWith("/api/autenticacao/validar-token") ||
                 requestURI.startsWith("/api/roles") ||
-                requestURI.startsWith("/api/usuarios/criar") ||
-                requestURI.startsWith("/static/") ||
-                requestURI.startsWith("/assets/");
+                requestURI.startsWith("/api/usuarios/criar");
     }
 
     /**
-     * Envia uma resposta de erro.
+     * Envia uma resposta de erro
      */
     private void sendErrorResponse(HttpServletResponse response, int status, String message) throws IOException {
         response.setStatus(status);
@@ -117,15 +125,5 @@ public class AuthenticationFilter extends OncePerRequestFilter {
         PrintWriter writer = response.getWriter();
         writer.write("{\"error\": \"Unauthorized\", \"message\": \"" + message + "\"}");
         writer.flush();
-    }
-
-    @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) {
-        String path = request.getRequestURI();
-        return path.startsWith("/static/") ||
-                path.startsWith("/assets/") ||
-                path.equals("/ping") ||
-                path.equals("/actuator/health") ||
-                path.equals("/health");
     }
 }
