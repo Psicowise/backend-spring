@@ -32,7 +32,7 @@ public class UsuarioController {
         return usuarioService.CriarUsuarioPsicologo(usuarioDto);
     }
 
-    @GetMapping(  "/usuariologado")
+    @GetMapping(  "/logado")
     public ResponseEntity<UsuarioLogadoDto> buscarUsuarioLogado() {
         return usuarioService.PegarUsuarioLogado();
     }
