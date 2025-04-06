@@ -13,6 +13,8 @@ import com.example.psicowise_backend_spring.repository.autenticacao.RoleReposito
 import com.example.psicowise_backend_spring.repository.autenticacao.UsuarioRepository;
 import com.example.psicowise_backend_spring.util.HashUtil;
 import org.apache.logging.log4j.message.StringFormattedMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.expression.ExpressionException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -25,6 +27,9 @@ import java.util.UUID;
 
 @Service
 public class UsuarioService {
+
+    private static final Logger logger = LoggerFactory.getLogger(UsuarioService.class);
+
 
     private UsuarioRepository usuarioRepository;
     private RoleRepository roleRepository;
@@ -192,28 +197,32 @@ public class UsuarioService {
     }
 
     public ResponseEntity<UsuarioLogadoDto> PegarUsuarioLogado (){
+        logger.info("Recuperando usuário logado.");
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         // Obter o ID do usuário autenticado em formato de string
         String idString = auth.getName();
-        System.out.println("Auth: " + auth);
-        System.out.println("Auth name: " + auth.getName());
-        System.out.println("Auth authorities: " + auth.getAuthorities());
+        logger.debug("Auth: {}", auth);
+        logger.debug("Auth name: {}", auth.getName());
+        logger.debug("Auth authorities: {}", auth.getAuthorities());
 
         // Converter a string para UUID
         UUID usuarioId;
-        try {
-            usuarioId = UUID.fromString(idString);
-        } catch (IllegalArgumentException e) {
-            throw new UsuarioNaoEncontradoException("ID inválido: " + idString);
+        usuarioId = UUID.fromString(idString);
+
+        if(usuarioId == null) {
+          logger.error("Falha ao converter id '{}' para UUID: {}", idString);
+        } else {
+            logger.info("Id do Usuario retornado com sucesso '{}' para UUID: {}", idString);
         }
 
+
         // Buscar o usuário pelo ID
-        Usuario usuario = usuarioRepository.findById(usuarioId)
-                .orElseThrow(() -> new UsuarioNaoEncontradoException("id: " + usuarioId));
+        Usuario usuario = usuarioRepository.findById(usuarioId).orElseThrow(() -> new UsuarioNaoEncontradoException("id: " + usuarioId));
 
         UsuarioLogadoDto usuarioLogado = usuarioMapper.converterParaDTO(usuario);
 
+        logger.info("Usuário logado recuperado com sucesso: {}", usuario.getEmail());
         return ResponseEntity.ok(usuarioLogado);
     }
 }
