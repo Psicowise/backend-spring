@@ -14,10 +14,9 @@ public class WebConfig implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         // Define only specific paths that should be handled as static resources
         registry.addResourceHandler("/static/**")
-                .addResourceLocations("classpath:/static/");
-
-        registry.addResourceHandler("/assets/**")
-                .addResourceLocations("classpath:/static/assets/");
+                .addResourceLocations("classpath:/static/")
+                .resourceChain(true)
+                .addResolver(new NoApiRequestResourceResolver());
     }
 
     @Override
