@@ -21,7 +21,6 @@ import java.util.List;
  * Combina configurações de WebConfig e RestControllerConfig
  */
 @Configuration
-@EnableWebMvc
 @Profile("!test")
 public class WebConfig implements WebMvcConfigurer {
 
