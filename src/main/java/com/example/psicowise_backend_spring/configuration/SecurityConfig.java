@@ -4,7 +4,7 @@ import com.example.psicowise_backend_spring.security.AuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -19,10 +19,15 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Configuração de segurança da aplicação.
+ * Define regras de acesso, configuração de CORS e JWT.
+ */
 @EnableWebSecurity
 @EnableMethodSecurity
 @RequiredArgsConstructor
 @Configuration
+@Profile("!test")
 public class SecurityConfig {
 
     private final AuthenticationFilter authenticationFilter;
@@ -52,7 +57,6 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         // Endpoints públicos
                         .requestMatchers("/ping", "/health", "/actuator/health").permitAll()
-                        .requestMatchers("/static/**", "/assets/**").permitAll()
                         .requestMatchers("/api/autenticacao/login", "/api/autenticacao/esqueci",
                                 "/api/autenticacao/redefinir", "/api/autenticacao/validar-token").permitAll()
                         .requestMatchers("/api/usuarios/criar/**").permitAll()
