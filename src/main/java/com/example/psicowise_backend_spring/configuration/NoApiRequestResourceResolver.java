@@ -21,4 +21,14 @@ public class NoApiRequestResourceResolver extends PathResourceResolver {
         }
         return super.resolveResource(request, requestPath, locations, chain);
     }
+
+    @Override
+    protected Resource resolveResourceInternal(HttpServletRequest request, String requestPath,
+                                               List<? extends Resource> locations, ResourceResolverChain chain) {
+        // Também verifica no método interno
+        if (requestPath.startsWith("api/") || requestPath.startsWith("/api/")) {
+            return null;
+        }
+        return super.resolveResourceInternal(request, requestPath, locations, chain);
+    }
 }
