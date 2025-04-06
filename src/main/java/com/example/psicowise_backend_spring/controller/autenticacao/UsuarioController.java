@@ -19,15 +19,10 @@ import java.util.UUID;
 @RequestMapping("/api/usuarios")
 public class UsuarioController {
 
-    private UsuarioService usuarioService;
+    final private UsuarioService usuarioService;
 
     public UsuarioController(UsuarioService usuarioService) {
         this.usuarioService = usuarioService;
-    }
-
-    @GetMapping("/logado/perfil")
-    public ResponseEntity<UsuarioLogadoDto> buscarUsuarioLogado() {
-        return usuarioService.PegarUsuarioLogado();
     }
 
     // Endpoint para criar um novo usuário
