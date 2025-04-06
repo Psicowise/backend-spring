@@ -62,6 +62,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/usuarios/criar/**").permitAll()
                         .requestMatchers("/api/roles/**").permitAll()
                         // Endpoints autenticados
+                        .requestMatchers("/api/auth/**").authenticated()
                         .requestMatchers("/api/whatsapp/**").authenticated()
                         .requestMatchers("/api/usuarios/buscar/atual").authenticated()
                         .requestMatchers("/api/**").authenticated()
