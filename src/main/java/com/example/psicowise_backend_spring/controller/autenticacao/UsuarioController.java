@@ -32,7 +32,7 @@ public class UsuarioController {
         return usuarioService.CriarUsuarioPsicologo(usuarioDto);
     }
 
-    @GetMapping( path = "/buscar/atual", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping( value = "/buscar/atual", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UsuarioLogadoDto> buscarUsuarioLogado() {
         return usuarioService.PegarUsuarioLogado();
     }
