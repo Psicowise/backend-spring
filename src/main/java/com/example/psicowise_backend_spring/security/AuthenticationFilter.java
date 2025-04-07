@@ -39,29 +39,38 @@ public class AuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+
         String requestURI = request.getRequestURI();
 
-        // Verificar se é uma URL que está isenta de autenticação
+        // Ignora URLs públicas
         if (isExemptUrl(requestURI)) {
             log.debug("URL isenta de autenticação: {}", requestURI);
             filterChain.doFilter(request, response);
             return;
         }
 
-        final String authorizationHeader = request.getHeader(AUTHORIZATION_HEADER);
-        log.debug("Auth header: {}", authorizationHeader != null ? "Present" : "Absent");
+        String authorizationHeader = request.getHeader(AUTHORIZATION_HEADER);
+        String token = authorizationHeader;
 
-        // Se não há header de autorização, apenas passe adiante
-        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-            log.debug("Sem token de autenticação ou formato inválido");
-            filterChain.doFilter(request, response);
+        if (authorizationHeader == null) {
+            log.warn("Header de autorização ausente");
+            sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Token ausente");
             return;
         }
 
-        // Processar a autenticação
-        try {
-            String token = authorizationHeader.substring(7);
+        // Remove prefixo "Bearer ", se houver
+        if (authorizationHeader.startsWith("Bearer ")) {
+            token = authorizationHeader.substring(7);
+        }
 
+        if (token.isBlank()) {
+            log.warn("Token em branco");
+            sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Token inválido");
+            return;
+        }
+
+        try {
+            // Verifica se o token foi revogado
             if (tokenBlacklistService.isTokenRevogado(token)) {
                 sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Token revogado");
                 return;
@@ -71,7 +80,6 @@ public class AuthenticationFilter extends OncePerRequestFilter {
 
             if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 if (jwtUtil.validateToken(token, userId)) {
-                    // Load user details and authorities here
                     List<GrantedAuthority> authorities = List.of(
                             new SimpleGrantedAuthority("ROLE_" + ERole.ADMIN.name()),
                             new SimpleGrantedAuthority("ROLE_" + ERole.USER.name()),
@@ -84,7 +92,6 @@ public class AuthenticationFilter extends OncePerRequestFilter {
                             authorities
                     );
 
-                    // Set the authentication in the SecurityContext
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                     log.debug("Autenticação configurada para o usuário: {}", userId);
                 } else {
@@ -93,13 +100,15 @@ public class AuthenticationFilter extends OncePerRequestFilter {
                     return;
                 }
             }
-            // Continue with the filter chain
+
             filterChain.doFilter(request, response);
+
         } catch (Exception ex) {
             log.error("Erro durante autenticação: {}", ex.getMessage(), ex);
             sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Erro de autenticação: " + ex.getMessage());
         }
     }
+
 
     /**
      * Verifica se a URL está isenta de autenticação
