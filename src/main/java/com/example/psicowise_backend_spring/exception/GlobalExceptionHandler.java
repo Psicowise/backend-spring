@@ -45,8 +45,7 @@ public class GlobalExceptionHandler {
     /**
      * Manipula exceções relacionadas a role não encontrada
      */
-    @ExceptionHandler({com.example.psicowise_backend_spring.exception.usuario.RoleNaoEncontradaException.class,
-            RoleNaoEncontradaException.class})
+    @ExceptionHandler(com.example.psicowise_backend_spring.exception.usuario.RoleNaoEncontradaException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ResponseEntity<Object> handleRoleNaoEncontradaException(Exception ex) {
         log.error("Role não encontrada: {}", ex.getMessage());
