@@ -27,7 +27,6 @@ import java.util.List;
 @EnableMethodSecurity
 @RequiredArgsConstructor
 @Configuration
-@Profile("default")
 public class SecurityConfig {
 
     private final AuthenticationFilter authenticationFilter;
