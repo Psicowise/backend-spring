@@ -33,22 +33,4 @@ public class TestConfig {
     public JavaMailSender javaMailSender() {
         return Mockito.mock(JavaMailSender.class);
     }
-
-    @Bean
-    @Primary
-    public EmailUtil emailUtil() {
-        return Mockito.mock(EmailUtil.class);
-    }
-
-    @Bean
-    @Primary
-    public JwtUtil jwtUtil() {
-        return Mockito.mock(JwtUtil.class);
-    }
-
-    @Bean
-    @Primary
-    public RecuperacaoSenhaService recuperacaoSenhaService() {
-        return Mockito.mock(RecuperacaoSenhaService.class);
-    }
 }
