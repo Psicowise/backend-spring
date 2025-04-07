@@ -20,14 +20,14 @@ public class UsuarioAtualController {
         this.usuarioService = usuarioService;
     }
 
-    //@GetMapping("/atual")
-    //public ResponseEntity<UsuarioLogadoDto> obterUsuarioAtual() {
-    //    return usuarioService.PegarUsuarioLogado();
-    //}
-
     @GetMapping("/atual")
-    public ResponseEntity<?> test() {
-        return ResponseEntity.notFound().build();
+    public ResponseEntity<UsuarioLogadoDto> obterUsuarioAtual() {
+        return usuarioService.PegarUsuarioLogado();
     }
+
+    //@GetMapping("/atual")
+    //public ResponseEntity<?> test() {
+    //    return ResponseEntity.notFound().build();
+    //}
 
 }

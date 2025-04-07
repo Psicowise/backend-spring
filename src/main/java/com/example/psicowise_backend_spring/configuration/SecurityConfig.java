@@ -23,6 +23,7 @@ import java.util.List;
  * Configuração de segurança da aplicação.
  * Define regras de acesso, configuração de CORS e JWT.
  */
+@Profile("!test")
 @EnableWebSecurity
 @EnableMethodSecurity
 @RequiredArgsConstructor
