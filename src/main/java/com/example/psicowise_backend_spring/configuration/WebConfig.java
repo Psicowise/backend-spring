@@ -23,7 +23,7 @@ import java.util.List;
  * Combina configurações de WebConfig e RestControllerConfig
  */
 @Configuration
-@Profile("!test")
+@Profile("default")
 public class WebConfig implements WebMvcConfigurer {
 
     @Override
