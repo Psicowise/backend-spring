@@ -12,11 +12,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/auth")
 public class UsuarioAtualController {
 
-    final private UsuarioService usuarioService;
+    @Autowired
+    private UsuarioService usuarioService;
 
-    public UsuarioAtualController(UsuarioService usuarioService) {
-        this.usuarioService = usuarioService;
-    }
+    //public UsuarioAtualController(UsuarioService usuarioService) {
+    //    this.usuarioService = usuarioService;
+    //}
 
     //@GetMapping("/atual")
     //public ResponseEntity<UsuarioLogadoDto> obterUsuarioAtual() {
