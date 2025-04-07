@@ -11,11 +11,9 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 public class PsicowiseBackendSpringApplication {
 
 	public static void main(String[] args) {
-
-		if (System.getenv("SPRING_DATASOURCE_URL") == null) {
-			Dotenv dotenv = Dotenv.load();
-			dotenv.entries().forEach(entry -> System.setProperty(entry.getKey(), entry.getValue()));
-		}
+		// Sempre carregar o .env se estiver presente
+		Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
+		dotenv.entries().forEach(entry -> System.setProperty(entry.getKey(), entry.getValue()));
 
 		SpringApplication.run(PsicowiseBackendSpringApplication.class, args);
 	}
