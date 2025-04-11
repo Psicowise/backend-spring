@@ -15,6 +15,7 @@ import com.example.psicowise_backend_spring.util.HashUtil;
 import org.apache.logging.log4j.message.StringFormattedMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.expression.ExpressionException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -36,6 +37,7 @@ public class UsuarioService {
     private HashUtil hashUtil;
     private UsuarioMapper usuarioMapper;
 
+    @Autowired
     public UsuarioService(
             UsuarioRepository usuarioRepository,
             RoleRepository roleRepository,

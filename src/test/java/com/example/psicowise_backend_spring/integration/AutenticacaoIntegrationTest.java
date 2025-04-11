@@ -129,7 +129,7 @@ public class AutenticacaoIntegrationTest {
     //@Test
     //@DisplayName("Deve falhar ao criar role duplicada")
     //void testCriarRoleDuplicada() throws Exception {
-        // Tentar criar role que já existe - usando Map
+    // Tentar criar role que já existe - usando Map
     //    Map<String, String> roleMap = new HashMap<>();
     //    roleMap.put("role", ERole.USER.name());
 
@@ -203,7 +203,7 @@ public class AutenticacaoIntegrationTest {
     //            "senha123"
     //    );
 
-        // Adicionar role manualmente
+    // Adicionar role manualmente
     //    String jsonWithRole = objectMapper.writeValueAsString(usuarioDto1)
     //            .replace("}", ",\"role\":\"" + ERole.USER.name() + "\"}");
 
@@ -213,7 +213,7 @@ public class AutenticacaoIntegrationTest {
     //                    .content(jsonWithRole))
     //            .andExpect(status().isOk());
 
-        // Tentar criar outro usuário com o mesmo email
+    // Tentar criar outro usuário com o mesmo email
     //    CriarUsuarioDto usuarioDto2 = new CriarUsuarioDto(
     //            "João",
     //            "Santos",
@@ -221,7 +221,7 @@ public class AutenticacaoIntegrationTest {
     //            "outrasenha"
     //    );
 
-        // Adicionar role manualmente
+    // Adicionar role manualmente
     //    String jsonWithRole2 = objectMapper.writeValueAsString(usuarioDto2)
     //            .replace("}", ",\"role\":\"" + ERole.USER.name() + "\"}");
 
