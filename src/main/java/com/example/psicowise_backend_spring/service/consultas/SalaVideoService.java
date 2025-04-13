@@ -7,17 +7,14 @@ import com.example.psicowise_backend_spring.entity.consulta.SalaVideo;
 import com.example.psicowise_backend_spring.repository.consulta.ConsultaRepository;
 import com.example.psicowise_backend_spring.repository.consulta.PsicologoRepository;
 import com.example.psicowise_backend_spring.repository.consulta.SalaVideoRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -30,7 +27,6 @@ public class SalaVideoService {
     @Value("${app.webrtc.server:https://meet.jit.si}")
     private String webrtcServer;
 
-    @Autowired
     public SalaVideoService(
             SalaVideoRepository salaVideoRepository,
             ConsultaRepository consultaRepository,
@@ -40,56 +36,38 @@ public class SalaVideoService {
         this.psicologoRepository = psicologoRepository;
     }
 
-    /**
-     * Cria uma sala de vídeo para uma consulta
-     *
-     * @param consultaId ID da consulta
-     * @return DTO com os dados da sala criada
-     */
     @Transactional
     public ResponseEntity<SalaVideoDto> criarSalaVideo(UUID consultaId) {
         try {
-            // Verificar se a consulta existe
             Consulta consulta = consultaRepository.findById(consultaId)
                     .orElseThrow(() -> new RuntimeException("Consulta não encontrada"));
 
-            // Verificar se o psicólogo autenticado é responsável pela consulta
             Psicologo psicologoAutenticado = getPsicologoAutenticado();
             if (!consulta.getPsicologo().getId().equals(psicologoAutenticado.getId())) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
             }
 
-            // Verificar se já existe uma sala para esta consulta
-            Optional<SalaVideo> salaExistente = salaVideoRepository.findByConsulta(consulta);
-            if (salaExistente.isPresent()) {
-                return ResponseEntity.ok(converterParaDto(salaExistente.get()));
-            }
+            return salaVideoRepository.findByConsulta(consulta)
+                    .map(sala -> ResponseEntity.ok(converterParaDto(sala)))
+                    .orElseGet(() -> {
+                        SalaVideo novaSala = criarNovaSala(consulta);
+                        return ResponseEntity.ok(converterParaDto(novaSala));
+                    });
 
-            // Gerar ID único para a sala
-            String salaId = "psicowise_" + gerarIdAleatorio();
-
-            // Criar links de acesso
-            String linkAcesso = webrtcServer + "/" + salaId;
-            String linkHost = linkAcesso + "#config.startWithVideoMuted=false" +
-                    "&config.startWithAudioMuted=false" +
-                    "&interfaceConfig.DISABLE_JOIN_LEAVE_NOTIFICATIONS=true" +
-                    "&interfaceConfig.TOOLBAR_BUTTONS=[\"microphone\",\"camera\",\"closedcaptions\",\"desktop\",\"fullscreen\",\"fodeviceselection\",\"hangup\",\"profile\",\"chat\",\"recording\",\"livestreaming\",\"etherpad\",\"sharedvideo\",\"settings\",\"raisehand\",\"videoquality\",\"filmstrip\",\"invite\",\"feedback\",\"stats\",\"shortcuts\",\"tileview\",\"videobackgroundblur\",\"download\",\"help\",\"mute-everyone\"]";
-
-            // Criar a sala
-            SalaVideo sala = new SalaVideo();
-            sala.setConsulta(consulta);
-            sala.setSalaId(salaId);
-            sala.setLinkAcesso(linkAcesso);
-            sala.setLinkHost(linkHost);
-            sala.setAtiva(false); // A sala será ativada mais tarde, próximo ao horário da consulta
-
-            SalaVideo salaSalva = salaVideoRepository.save(sala);
-
-            // Converter para DTO e retornar
-            return ResponseEntity.ok(converterParaDto(salaSalva));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(null);
         }
+    }
+
+    private SalaVideo criarNovaSala(Consulta consulta) {
+        SalaVideo sala = new SalaVideo();
+        sala.setConsulta(consulta);
+        String salaId = "psicowise_" + consulta.getId().toString().substring(0, 8);
+        sala.setSalaId(salaId);
+        sala.setLinkAcesso(webrtcServer + "/" + salaId);
+        sala.setLinkHost(webrtcServer + "/" + salaId + "#config.startWithVideoMuted=false");
+        sala.setAtiva(false);
+        return salaVideoRepository.save(sala);
     }
 
     /**
@@ -169,8 +147,7 @@ public class SalaVideoService {
                     .orElseThrow(() -> new RuntimeException("Consulta não encontrada"));
 
             // Verificar se o psicólogo autenticado é responsável pela consulta ou se é o paciente da consulta
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            String usuarioIdStr = auth.getName();
+            String usuarioIdStr = SecurityContextHolder.getContext().getAuthentication().getName();
             UUID usuarioId = UUID.fromString(usuarioIdStr);
 
             Psicologo psicologoAutenticado = psicologoRepository.findByUsuarioId(usuarioId).orElse(null);
@@ -196,37 +173,13 @@ public class SalaVideoService {
         }
     }
 
-    /**
-     * Gera um ID aleatório para a sala
-     *
-     * @return String com o ID gerado
-     */
-    private String gerarIdAleatorio() {
-        // Combinar UUID com timestamp para garantir unicidade
-        return UUID.randomUUID().toString().replace("-", "").substring(0, 12) +
-                "_" + System.currentTimeMillis() % 10000;
-    }
 
-    /**
-     * Obtém o psicólogo autenticado
-     *
-     * @return O psicólogo autenticado
-     */
     private Psicologo getPsicologoAutenticado() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String idString = auth.getName();
-        UUID usuarioId = UUID.fromString(idString);
-
-        return psicologoRepository.findByUsuarioId(usuarioId)
+        String usuarioId = SecurityContextHolder.getContext().getAuthentication().getName();
+        return psicologoRepository.findByUsuarioId(UUID.fromString(usuarioId))
                 .orElseThrow(() -> new RuntimeException("Psicólogo não encontrado"));
     }
 
-    /**
-     * Converte uma entidade SalaVideo para DTO
-     *
-     * @param sala Entidade a ser convertida
-     * @return DTO correspondente
-     */
     private SalaVideoDto converterParaDto(SalaVideo sala) {
         return new SalaVideoDto(
                 sala.getId(),
@@ -238,29 +191,5 @@ public class SalaVideoService {
                 sala.getDataAtivacao(),
                 sala.getDataDesativacao()
         );
-    }
-}
-package com.example.psicowise_backend_spring.service.consultas;
-
-import com.example.psicowise_backend_spring.entity.consulta.Consulta;
-import com.example.psicowise_backend_spring.entity.consulta.SalaVideo;
-import com.example.psicowise_backend_spring.repository.consulta.SalaVideoRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import java.util.UUID;
-
-@Service
-@RequiredArgsConstructor
-public class SalaVideoService {
-    
-    private final SalaVideoRepository salaVideoRepository;
-    
-    public SalaVideo criarSalaParaConsulta(Consulta consulta) {
-        SalaVideo sala = new SalaVideo();
-        sala.setConsulta(consulta);
-        sala.setLinkSala("meet.google.com/" + UUID.randomUUID().toString().substring(0, 8));
-        sala.setToken(UUID.randomUUID().toString());
-        sala.setAtiva(false);
-        return salaVideoRepository.save(sala);
     }
 }
