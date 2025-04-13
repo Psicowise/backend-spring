@@ -1,7 +1,4 @@
-
 package com.example.psicowise_backend_spring.service.mensagens;
-
-import com.example.psicowise_backend_spring.repository.consulta.ConsultaRepository;
 
 import com.example.psicowise_backend_spring.entity.consulta.Consulta;
 import com.example.psicowise_backend_spring.repository.consulta.ConsultaRepository;
@@ -9,34 +6,24 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class AgendadorLembretesService {
-    private final NotificacaoService notificacaoService;
+
     private final ConsultaRepository consultaRepository;
 
-    @Scheduled(fixedRate = 3600000) // 1 hora
-    public void verificarLembretes() {
-        LocalDateTime agora = LocalDateTime.now();
-        List<Consulta> consultas = consultaRepository.findByDataHoraBetween(
-            agora, 
-            agora.plusHours(25)
-        );
-        
-        for (Consulta consulta : consultas) {
-            agendarLembretes(consulta);
-        }
-    }
+    @Scheduled(cron = "0 0 8 * * *") // Executa todos os dias às 8h
+    public void enviarLembretes() {
+        LocalDateTime hoje = LocalDateTime.now();
+        LocalDateTime amanha = hoje.plusDays(1);
 
-    private void agendarLembretes(Consulta consulta) {
-        Duration tempoAteConsulta = Duration.between(LocalDateTime.now(), consulta.getDataHora());
-        
-        if (tempoAteConsulta.toHours() <= 24) {
-            notificacaoService.enviarLembreteEmail(consulta);
-        }
-        
-        if (tempoAteConsulta.toHours() <= 1) {
-            notificacaoService.enviarLembreteWhatsapp(consulta);
+        List<Consulta> consultasProximas = consultaRepository.findByDataHoraBetween(hoje, amanha);
+
+        for (Consulta consulta : consultasProximas) {
+            // Lógica para enviar lembretes
         }
     }
 }
