@@ -39,4 +39,21 @@ public class NotaConsulta {
 
     @LastModifiedDate
     private LocalDateTime updatedAt;
+
+    // Métodos que estavam faltando
+    public UUID getId() {
+        return id;
+    }
+
+    public Consulta getConsulta() {
+        return consulta;
+    }
+
+    public void setConteudo(String conteudo) {
+        this.conteudo = conteudo;
+    }
+
+    public void setDataNota(LocalDateTime dataNota) {
+        this.dataNota = dataNota;
+    }
 }
