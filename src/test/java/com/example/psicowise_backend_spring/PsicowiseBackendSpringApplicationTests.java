@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest
-@ImportAutoConfiguration(exclude = { MailSenderAutoConfiguration.class })
+@ImportAutoConfiguration
 @ActiveProfiles("test")
 @Import(TestConfig.class)
 
