@@ -2,6 +2,7 @@
 package com.example.psicowise_backend_spring.service.consultas;
 
 import com.example.psicowise_backend_spring.entity.consulta.Consulta;
+import com.example.psicowise_backend_spring.repository.consulta.ConsultaRepository;
 import com.example.psicowise_backend_spring.service.mensagens.NotificacaoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
