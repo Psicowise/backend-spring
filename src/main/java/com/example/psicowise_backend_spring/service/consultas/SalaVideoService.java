@@ -240,3 +240,27 @@ public class SalaVideoService {
         );
     }
 }
+package com.example.psicowise_backend_spring.service.consultas;
+
+import com.example.psicowise_backend_spring.entity.consulta.Consulta;
+import com.example.psicowise_backend_spring.entity.consulta.SalaVideo;
+import com.example.psicowise_backend_spring.repository.consulta.SalaVideoRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import java.util.UUID;
+
+@Service
+@RequiredArgsConstructor
+public class SalaVideoService {
+    
+    private final SalaVideoRepository salaVideoRepository;
+    
+    public SalaVideo criarSalaParaConsulta(Consulta consulta) {
+        SalaVideo sala = new SalaVideo();
+        sala.setConsulta(consulta);
+        sala.setLinkSala("meet.google.com/" + UUID.randomUUID().toString().substring(0, 8));
+        sala.setToken(UUID.randomUUID().toString());
+        sala.setAtiva(false);
+        return salaVideoRepository.save(sala);
+    }
+}

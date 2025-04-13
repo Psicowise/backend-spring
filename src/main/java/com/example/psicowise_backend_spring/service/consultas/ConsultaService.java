@@ -1,4 +1,3 @@
-
 package com.example.psicowise_backend_spring.service.consultas;
 
 import com.example.psicowise_backend_spring.entity.consulta.Consulta;
@@ -21,14 +20,25 @@ public class ConsultaService {
     @Autowired
     private LembreteService lembreteService;
 
+    @Autowired
+    private SalaVideoService salaVideoService; // Added SalaVideoService
+
     public Consulta criarConsulta(Consulta consulta) {
         Consulta novaConsulta = consultaRepository.save(consulta);
-        criarSalaVideo(novaConsulta);
+        salaVideoService.criarSalaParaConsulta(novaConsulta); // Integrate video room creation
         lembreteService.agendarLembretes(novaConsulta);
         return novaConsulta;
     }
 
-    private void criarSalaVideo(Consulta consulta) {
+
+}
+
+@Service
+class SalaVideoService {
+    @Autowired
+    private SalaVideoRepository salaVideoRepository;
+
+    public void criarSalaParaConsulta(Consulta consulta) {
         SalaVideo sala = new SalaVideo();
         sala.setConsulta(consulta);
         String salaId = "psicowise_" + consulta.getId().toString().substring(0, 8);
