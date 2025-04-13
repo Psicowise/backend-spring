@@ -2,7 +2,7 @@ package com.example.psicowise_backend_spring.entity.consulta;
 
 import jakarta.persistence.*;
 import lombok.Data;
-
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
