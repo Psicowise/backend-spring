@@ -38,4 +38,7 @@ public class ConfiguracaoPagamento {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+    
+    @Column(name = "is_padrao")
+    private boolean isPadrao;
 }
