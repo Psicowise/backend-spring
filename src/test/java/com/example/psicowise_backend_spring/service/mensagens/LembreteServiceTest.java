@@ -11,6 +11,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+
+import org.springframework.test.util.ReflectionTestUtils;
+
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -53,7 +56,8 @@ public class LembreteServiceTest {
         paciente = new Paciente();
         paciente.setId(UUID.randomUUID());
         paciente.setNome("Paciente Teste");
-        paciente.setTelefoneWhatsapp("+5511999999999");
+        // Usando o método getter/setter correto para o telefone WhatsApp
+        ReflectionTestUtils.setField(paciente, "telefoneWhatsapp", "+5511999999999");
 
         // Configurar consulta
         consulta = new Consulta();
@@ -66,10 +70,7 @@ public class LembreteServiceTest {
     @Test
     @DisplayName("Deve agendar lembretes com sucesso para uma consulta")
     void agendarLembretesComSucesso() {
-        // Act
-        lembreteService.agendarLembretes(consulta);
-
-        // Assert - verificar se o método foi executado sem exceções
+        // Act & Assert - verificar se o método foi executado sem exceções
         // Não temos como verificar diretamente o agendamento pois é armazenado em um mapa privado
         assertDoesNotThrow(() -> lembreteService.agendarLembretes(consulta));
     }
@@ -109,7 +110,8 @@ public class LembreteServiceTest {
     @DisplayName("Deve retornar falso ao enviar lembrete quando paciente não tem WhatsApp")
     void retornarFalsoAoEnviarLembreteSemWhatsApp() {
         // Arrange
-        paciente.setTelefoneWhatsapp(null);
+        // Usando o método correto para definir o telefone WhatsApp como nulo
+        ReflectionTestUtils.setField(paciente, "telefoneWhatsapp", null);
         
         // Act
         boolean resultado = lembreteService.enviarLembreteImediato(consulta);
