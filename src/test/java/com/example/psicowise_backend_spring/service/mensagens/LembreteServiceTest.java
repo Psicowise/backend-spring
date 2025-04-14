@@ -14,6 +14,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+import com.example.psicowise_backend_spring.entity.common.Telefone;
+
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -56,8 +60,15 @@ public class LembreteServiceTest {
         paciente = new Paciente();
         paciente.setId(UUID.randomUUID());
         paciente.setNome("Paciente Teste");
-        // Usando o método getter/setter correto para o telefone WhatsApp
-        ReflectionTestUtils.setField(paciente, "telefoneWhatsapp", "+5511999999999");
+        
+        // Configurar telefones do paciente
+        List<Telefone> telefones = new ArrayList<>();
+        Telefone telefoneWhatsapp = new Telefone();
+        telefoneWhatsapp.setNumero("+5511999999999");
+        telefoneWhatsapp.setWhatsapp(true);
+        telefoneWhatsapp.setPrincipal(true);
+        telefones.add(telefoneWhatsapp);
+        ReflectionTestUtils.setField(paciente, "telefones", telefones);
 
         // Configurar consulta
         consulta = new Consulta();
@@ -110,8 +121,8 @@ public class LembreteServiceTest {
     @DisplayName("Deve retornar falso ao enviar lembrete quando paciente não tem WhatsApp")
     void retornarFalsoAoEnviarLembreteSemWhatsApp() {
         // Arrange
-        // Usando o método correto para definir o telefone WhatsApp como nulo
-        ReflectionTestUtils.setField(paciente, "telefoneWhatsapp", null);
+        // Configurar uma lista de telefones sem WhatsApp
+        ReflectionTestUtils.setField(paciente, "telefones", new ArrayList<>());
         
         // Act
         boolean resultado = lembreteService.enviarLembreteImediato(consulta);
