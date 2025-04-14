@@ -1,7 +1,7 @@
 package com.example.psicowise_backend_spring.repository.consulta;
 
 import com.example.psicowise_backend_spring.entity.consulta.Consulta;
-import com.example.psicowise_backend_spring.entity.usuario.Psicologo;
+import com.example.psicowise_backend_spring.entity.consulta.Psicologo;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
