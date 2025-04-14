@@ -1,4 +1,3 @@
-
 package com.example.psicowise_backend_spring.service.consultas;
 
 import com.example.psicowise_backend_spring.entity.consulta.Consulta;
