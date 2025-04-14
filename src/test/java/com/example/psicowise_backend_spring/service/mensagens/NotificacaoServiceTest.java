@@ -1,3 +1,4 @@
+
 package com.example.psicowise_backend_spring.service.mensagens;
 
 import com.example.psicowise_backend_spring.entity.autenticacao.Usuario;
@@ -25,7 +26,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class NotificacaoServiceTest {
+public class LembreteServiceTest {
 
     @Mock
     private WhatsappService whatsappService;
