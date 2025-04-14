@@ -25,7 +25,40 @@ public class SalaVideoDto {
         this.dataDesativacao = dataDesativacao;
     }
 
-    // Getters e Setters
+    // Métodos padrão para compatibilidade com Java records
+    public UUID id() {
+        return id;
+    }
+
+    public UUID consultaId() {
+        return consultaId;
+    }
+
+    public String salaId() {
+        return salaId;
+    }
+
+    public String linkAcesso() {
+        return linkAcesso;
+    }
+
+    public String linkHost() {
+        return linkHost;
+    }
+
+    public boolean ativa() {
+        return ativa;
+    }
+
+    public LocalDateTime dataAtivacao() {
+        return dataAtivacao;
+    }
+
+    public LocalDateTime dataDesativacao() {
+        return dataDesativacao;
+    }
+
+    // Getters e Setters tradicionais
     public UUID getId() {
         return id;
     }
