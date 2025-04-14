@@ -35,7 +35,7 @@ args = "chmod +x mvnw"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "./mvnw clean spring-boot:run"
+args = "./mvnw spring-boot:run -Dspring-boot.run.arguments=--server.address=0.0.0.0"
 
 [[ports]]
 localPort = 5000

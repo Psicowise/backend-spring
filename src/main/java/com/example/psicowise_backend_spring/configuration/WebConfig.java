@@ -1,3 +1,4 @@
+
 package com.example.psicowise_backend_spring.configuration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,10 +16,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import java.util.List;
 
 /**
- * Configuração MVC para aplicação REST
+ * Configuração Web da aplicação
  */
 @Configuration
-// Removido @EnableWebMvc para deixar o Spring Boot gerenciar a autoconfiguração
 public class WebConfig implements WebMvcConfigurer {
 
     @Override
