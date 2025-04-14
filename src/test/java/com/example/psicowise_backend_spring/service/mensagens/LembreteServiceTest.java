@@ -130,5 +130,6 @@ public class LembreteServiceTest {
         
         // Assert
         assertFalse(resultado);
+        verify(whatsappService).enviarMensagemSimples(anyString(), anyString());
     }
 }
