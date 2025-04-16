@@ -119,10 +119,11 @@ public class PacienteService {
 
     private void atualizarTelefonePaciente(Paciente paciente, String numeroTelefone) {
         // Find existing primary phone for the patient
-        Telefone existingPhone = telefoneRepository.findByProprietarioIdAndTipoProprietarioAndPrincipal(paciente.getId(), TipoProprietario.PACIENTE, true);
+        Optional<Telefone> existingPhoneOpt = telefoneRepository.findByProprietarioIdAndTipoProprietarioAndPrincipal(paciente.getId(), TipoProprietario.PACIENTE, true);
 
-        if (existingPhone != null) {
+        if (existingPhoneOpt.isPresent()) {
             // Update existing phone
+            Telefone existingPhone = existingPhoneOpt.orElse(null);
             String numeroLimpo = numeroTelefone.replaceAll("[^0-9]", "");
             if (numeroLimpo.length() >= 11) {
                 existingPhone.setCodigoPais("+55");
