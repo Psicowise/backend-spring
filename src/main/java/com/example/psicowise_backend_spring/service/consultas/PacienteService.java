@@ -3,6 +3,7 @@ package com.example.psicowise_backend_spring.service.consultas;
 import com.example.psicowise_backend_spring.entity.common.Telefone;
 import com.example.psicowise_backend_spring.entity.consulta.Paciente;
 import com.example.psicowise_backend_spring.entity.consulta.Psicologo;
+import com.example.psicowise_backend_spring.entity.consulta.paciente.PacienteRequestDTO;
 import com.example.psicowise_backend_spring.enums.common.TipoProprietario;
 import com.example.psicowise_backend_spring.repository.common.TelefoneRepository;
 import com.example.psicowise_backend_spring.repository.consulta.PacienteRepository;
