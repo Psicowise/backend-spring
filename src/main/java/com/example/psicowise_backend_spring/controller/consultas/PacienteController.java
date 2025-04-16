@@ -1,7 +1,7 @@
 
 package com.example.psicowise_backend_spring.controller.consultas;
 
-import com.example.psicowise_backend_spring.dto.paciente.PacienteRequestDTO;
+import com.example.psicowise_backend_spring.dto.consultas.PacienteRequestDto;
 import com.example.psicowise_backend_spring.entity.consulta.Paciente;
 import com.example.psicowise_backend_spring.service.consultas.PacienteService;
 import lombok.RequiredArgsConstructor;
@@ -36,12 +36,12 @@ public class PacienteController {
     }
 
     @PostMapping
-    public ResponseEntity<Paciente> criar(@RequestBody PacienteRequestDTO pacienteDTO) {
+    public ResponseEntity<Paciente> criar(@RequestBody PacienteRequestDto pacienteDTO) {
         return ResponseEntity.ok(pacienteService.criar(pacienteDTO));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Paciente> atualizar(@PathVariable UUID id, @RequestBody PacienteRequestDTO pacienteDTO) {
+    public ResponseEntity<Paciente> atualizar(@PathVariable UUID id, @RequestBody PacienteRequestDto pacienteDTO) {
         return ResponseEntity.ok(pacienteService.atualizar(id, pacienteDTO));
     }
 

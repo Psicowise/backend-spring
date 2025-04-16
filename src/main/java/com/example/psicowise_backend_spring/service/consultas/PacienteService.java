@@ -3,7 +3,7 @@ package com.example.psicowise_backend_spring.service.consultas;
 import com.example.psicowise_backend_spring.entity.common.Telefone;
 import com.example.psicowise_backend_spring.entity.consulta.Paciente;
 import com.example.psicowise_backend_spring.entity.consulta.Psicologo;
-import com.example.psicowise_backend_spring.entity.consulta.paciente.PacienteRequestDTO;
+import com.example.psicowise_backend_spring.dto.consultas.PacienteRequestDto;
 import com.example.psicowise_backend_spring.enums.common.TipoProprietario;
 import com.example.psicowise_backend_spring.repository.common.TelefoneRepository;
 import com.example.psicowise_backend_spring.repository.consulta.PacienteRepository;
@@ -51,7 +51,7 @@ public class PacienteService {
                 .orElse(List.of());
     }
 
-    public Paciente criar(PacienteRequestDTO pacienteDTO) {
+    public Paciente criar(PacienteRequestDto pacienteDTO) {
         // Obter o psicólogo logado
         UUID usuarioId = usuarioService.PegarUsuarioLogado().getBody().getId();
         Psicologo psicologo = psicologoRepository.findByUsuarioId(usuarioId)
@@ -75,7 +75,7 @@ public class PacienteService {
         return pacienteSalvo;
     }
 
-    public Paciente atualizar(UUID id, PacienteRequestDTO pacienteDTO) {
+    public Paciente atualizar(UUID id, PacienteRequestDto pacienteDTO) {
         Paciente paciente = pacienteRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Paciente não encontrado"));
 

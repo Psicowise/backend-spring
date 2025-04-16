@@ -1,5 +1,5 @@
 
-package com.example.psicowise_backend_spring.dto.paciente;
+package com.example.psicowise_backend_spring.dto.consultas;
 
 import com.example.psicowise_backend_spring.dto.endereco.EnderecoDTO;
 import lombok.Data;
@@ -7,7 +7,7 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Data
-public class PacienteRequestDTO {
+public class PacienteRequestDto {
     private String nome;
     private String sobrenome;
     private String email;
