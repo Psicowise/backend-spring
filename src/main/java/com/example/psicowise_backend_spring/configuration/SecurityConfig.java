@@ -45,30 +45,42 @@ public class SecurityConfig {
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
+
+        // Configuração específica para /api/auth
+            CorsConfiguration authConfig = new CorsConfiguration(configuration);
+            source.registerCorsConfiguration("/api/auth/**", authConfig);
+
         return source;
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(authorize -> authorize
-                        // Endpoints públicos
-                        .requestMatchers("/ping", "/health", "/actuator/health").permitAll()
-                        .requestMatchers("/api/autenticacao/login", "/api/autenticacao/esqueci",
-                                "/api/autenticacao/redefinir", "/api/autenticacao/validar-token").permitAll()
-                        .requestMatchers("/api/usuarios/criar/**").permitAll()
-                        .requestMatchers("/api/roles/**").permitAll()
-                        // Endpoints autenticados
-                        .requestMatchers("/api/auth/**").authenticated()
+      http
+      .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+      .csrf(AbstractHttpConfigurer::disable)
+      .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+      .authorizeHttpRequests(authorize -> authorize
+        // Endpoints públicos (mais específicos primeiro)
+        .requestMatchers("/ping", "/health", "/actuator/health").permitAll()
+        .requestMatchers("/api/autenticacao/login", "/api/autenticacao/esqueci",
+          "/api/autenticacao/redefinir", "/api/autenticacao/validar-token").permitAll()
+        .requestMatchers("/api/usuarios/criar/**").permitAll()
+        .requestMatchers("/api/roles/**").permitAll()
+
+                        // Endpoint problemático - seja mais específico com ele
+                        .requestMatchers("/api/auth/atual").authenticated()
+
+                        // Outros endpoints autenticados
                         .requestMatchers("/api/whatsapp/**").authenticated()
                         .requestMatchers("/api/usuarios/buscar/atual").authenticated()
+
+                        // Regra geral para todos outros endpoints /api
                         .requestMatchers("/api/**").authenticated()
+
+                        // Regra para qualquer outro endpoint
                         .anyRequest().authenticated()
-                )
-                .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
+      )
+      .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

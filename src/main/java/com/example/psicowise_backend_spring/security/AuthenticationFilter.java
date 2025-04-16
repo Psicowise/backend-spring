@@ -7,6 +7,9 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
@@ -17,10 +20,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.List;
 
 /**
  * Filtro responsável pela autenticação baseada em JWT.
@@ -36,9 +35,11 @@ public class AuthenticationFilter extends OncePerRequestFilter {
     private static final String AUTHORIZATION_HEADER = "Authorization";
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
-
+    protected void doFilterInternal(
+        HttpServletRequest request,
+        HttpServletResponse response,
+        FilterChain filterChain
+    ) throws ServletException, IOException {
         String requestURI = request.getRequestURI();
 
         // Ignora URLs públicas
@@ -53,7 +54,11 @@ public class AuthenticationFilter extends OncePerRequestFilter {
 
         if (authorizationHeader == null) {
             log.warn("Header de autorização ausente");
-            sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Token ausente");
+            sendErrorResponse(
+                response,
+                HttpServletResponse.SC_UNAUTHORIZED,
+                "Token ausente"
+            );
             return;
         }
 
@@ -64,74 +69,117 @@ public class AuthenticationFilter extends OncePerRequestFilter {
 
         if (token.isBlank()) {
             log.warn("Token em branco");
-            sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Token inválido");
+            sendErrorResponse(
+                response,
+                HttpServletResponse.SC_UNAUTHORIZED,
+                "Token inválido"
+            );
             return;
         }
 
         try {
             // Verifica se o token foi revogado
             if (tokenBlacklistService.isTokenRevogado(token)) {
-                sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Token revogado");
+                sendErrorResponse(
+                    response,
+                    HttpServletResponse.SC_UNAUTHORIZED,
+                    "Token revogado"
+                );
                 return;
             }
 
             String userId = jwtUtil.extractUserId(token);
 
-            if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            if (
+                userId != null &&
+                SecurityContextHolder.getContext().getAuthentication() == null
+            ) {
                 if (jwtUtil.validateToken(token, userId)) {
                     List<GrantedAuthority> authorities = List.of(
-                            new SimpleGrantedAuthority("ROLE_" + ERole.ADMIN.name()),
-                            new SimpleGrantedAuthority("ROLE_" + ERole.USER.name()),
-                            new SimpleGrantedAuthority("ROLE_" + ERole.PSICOLOGO.name())
+                        new SimpleGrantedAuthority(
+                            "ROLE_" + ERole.ADMIN.name()
+                        ),
+                        new SimpleGrantedAuthority("ROLE_" + ERole.USER.name()),
+                        new SimpleGrantedAuthority(
+                            "ROLE_" + ERole.PSICOLOGO.name()
+                        )
                     );
 
-                    Authentication authentication = new UsernamePasswordAuthenticationToken(
+                    Authentication authentication =
+                        new UsernamePasswordAuthenticationToken(
                             userId,
                             null,
                             authorities
-                    );
+                        );
 
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
-                    log.debug("Autenticação configurada para o usuário: {}", userId);
+                    SecurityContextHolder.getContext()
+                        .setAuthentication(authentication);
+                    log.debug(
+                        "Autenticação configurada para o usuário: {}",
+                        userId
+                    );
                 } else {
                     log.warn("Token inválido para o usuário: {}", userId);
-                    sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Token inválido");
+                    sendErrorResponse(
+                        response,
+                        HttpServletResponse.SC_UNAUTHORIZED,
+                        "Token inválido"
+                    );
                     return;
                 }
             }
 
             filterChain.doFilter(request, response);
-
         } catch (Exception ex) {
             log.error("Erro durante autenticação: {}", ex.getMessage(), ex);
-            sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Erro de autenticação: " + ex.getMessage());
+            sendErrorResponse(
+                response,
+                HttpServletResponse.SC_UNAUTHORIZED,
+                "Erro de autenticação: " + ex.getMessage()
+            );
         }
     }
-
 
     /**
      * Verifica se a URL está isenta de autenticação
      */
     private boolean isExemptUrl(String requestURI) {
-        return requestURI.equals("/ping") ||
-                requestURI.equals("/actuator/health") ||
-                requestURI.equals("/health") ||
-                requestURI.startsWith("/api/autenticacao/login") ||
-                requestURI.startsWith("/api/autenticacao/esqueci") ||
-                requestURI.startsWith("/api/autenticacao/redefinir") ||
-                requestURI.startsWith("/api/autenticacao/validar-token") ||
-                requestURI.startsWith("/api/roles") ||
-                requestURI.startsWith("/api/usuarios/criar");
+        boolean isExempt =
+            requestURI.equals("/ping") ||
+            requestURI.equals("/actuator/health") ||
+            requestURI.equals("/health") ||
+            requestURI.startsWith("/api/autenticacao/login") ||
+            requestURI.startsWith("/api/autenticacao/esqueci") ||
+            requestURI.startsWith("/api/autenticacao/redefinir") ||
+            requestURI.startsWith("/api/autenticacao/validar-token") ||
+            requestURI.startsWith("/api/roles") ||
+            requestURI.startsWith("/api/usuarios/criar");
+
+        // Log adicional para depuração
+        if (requestURI.contains("/api/auth/atual")) {
+            log.info(
+                "Requisição para /api/auth/atual - isExempt: {}",
+                isExempt
+            );
+        }
+
+        return isExempt;
     }
 
     /**
      * Envia uma resposta de erro
      */
-    private void sendErrorResponse(HttpServletResponse response, int status, String message) throws IOException {
+    private void sendErrorResponse(
+        HttpServletResponse response,
+        int status,
+        String message
+    ) throws IOException {
         response.setStatus(status);
         response.setContentType("application/json");
         PrintWriter writer = response.getWriter();
-        writer.write("{\"error\": \"Unauthorized\", \"message\": \"" + message + "\"}");
+        writer.write(
+            "{\"error\": \"Unauthorized\", \"message\": \"" + message + "\"}"
+        );
         writer.flush();
     }
 }
