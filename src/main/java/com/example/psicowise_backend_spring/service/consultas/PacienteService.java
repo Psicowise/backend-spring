@@ -123,7 +123,7 @@ public class PacienteService {
 
         if (existingPhoneOpt.isPresent()) {
             // Update existing phone
-            Telefone existingPhone = existingPhoneOpt.orElse(null);
+            Telefone existingPhone = existingPhoneOpt.get();
             String numeroLimpo = numeroTelefone.replaceAll("[^0-9]", "");
             if (numeroLimpo.length() >= 11) {
                 existingPhone.setCodigoPais("+55");
